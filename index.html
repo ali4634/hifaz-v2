@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Hifaz Tracker</title>
+    
+    <meta name="theme-color" content="#3498db"/>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script src="capacitor.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #3498db; --secondary-color: #2980b9; --success-color: #27ae60;
+            --danger-color: #e74c3c; --warning-color: #f39c12; --light-color: #ecf0f1;
+            --dark-color: #2c3e50; --absent-color: #ffecec; --present-color: #e8f5e9;
+            --inactive-color: #fff3e0;
+            --border-radius: 8px; --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            font-family: 'Noto Nastaliq Urdu', 'Segoe UI', Tahoma, sans-serif;
+            margin: 0; padding: 10px;
+            background-color: #f5f7fa; direction: rtl; font-size: 15px; color: #333;
+            line-height: 1.6; overscroll-behavior-y: contain;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        /* --- ڈارک تھیم --- */
+        body.dark-theme { background-color: #121212; color: #e0e0e0; }
+        .dark-theme .container, .dark-theme .modal-content, .dark-theme .management-section, .dark-theme .quantity-assistant { background-color: #1e1e1e; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+        .dark-theme h1, .dark-theme h2, .dark-theme h3, .dark-theme h4, .dark-theme h5 { color: #f5f5f5; }
+        .dark-theme h1 { border-bottom-color: var(--secondary-color); }
+        .dark-theme .tab { background-color: #333; color: #f1f1f1; border-color: #444; }
+        .dark-theme .tab.active { background-color: var(--primary-color); border-color: var(--primary-color); color: white; }
+        .dark-theme .tab-content, .dark-theme #student-list { border-color: #444; }
+        .dark-theme th { background-color: var(--dark-color); }
+        .dark-theme td, .dark-theme th { border-bottom-color: #444 !important; }
+        .dark-theme tr.present-row { background-color: #2a3b2a; }
+        .dark-theme tr.absent-row { background-color: #4a2c2c; }
+        .dark-theme .input-group input, .dark-theme .input-group select, .dark-theme .section-selector, .dark-theme .para-selector-container select { background-color: #333; color: #f1f1f1; border-color: #555; }
+        .dark-theme .quantity-info { background-color: #333; color: #ccc; border-color: #555; }
+        .dark-theme .weekly-graph .graph-bar.recited { background-color: var(--success-color); }
+        .dark-theme #student-report-summary { background-color: #2c2c2c; }
+        .dark-theme .slider { background-color: #555; }
+        .dark-theme .close { color: #888; }
+        .dark-theme .quantity-assistant .quick-btn { background-color: #2c2c2c; color: var(--primary-color); }
+        .dark-theme .small-btn { background-color: #444; color: #f1f1f1; }
+        
+        #theme-toggle { position: absolute; top: 15px; left: 15px; background: none; border: 1px solid #ccc; color: #888; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2em; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .dark-theme #theme-toggle { border-color: #555; color: #f1f1f1; }
+        .container { position:relative; max-width: 100%; margin: 0 auto; background-color: white; padding: 15px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); }
+        h1 { text-align: center; margin-bottom: 15px; font-size: 1.5em; padding-bottom: 10px; border-bottom: 2px solid var(--primary-color); }
+        .tabs { display: flex; margin-bottom: 12px; border-bottom: 1px solid #e0e0e0; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
+        .tab { padding: 8px 14px; cursor: pointer; background-color: #f1f1f1; border-radius: var(--border-radius) var(--border-radius) 0 0; font-size: 0.9em; border: 1px solid #e0e0e0; border-bottom: none; white-space: nowrap; }
+        .tab.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .tab-content { display: none; padding: 12px; border: 1px solid #e0e0e0; border-top: none; }
+        .tab-content.active { display: block; }
+        .date-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 4px 12px; background-color: var(--primary-color); color: white; border-radius: var(--border-radius); gap: 10px; }
+        .date-header h2 { margin: 0; font-size: 1em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.85em; }
+        th, td { padding: 8px 10px; border-bottom: 1px solid #e0e0e0; vertical-align: middle; }
+        #attendance-table th, #attendance-table td { text-align: center; }
+        #attendance-table th:first-child, #attendance-table td:first-child { text-align: right; }
+        th { background-color: var(--primary-color); color: white; font-weight: normal; position: sticky; top: 0; z-index: 1; }
+        tr.present-row { background-color: var(--present-color); }
+        tr.absent-row { background-color: var(--absent-color); }
+        .attendance-cell-content { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 50px; }
+        .quantity-info { font-size: 0.8em; color: #555; cursor: pointer; margin-top: 6px; padding: 2px 6px; line-height: 1.3; min-height: 1.3em; min-width: 45px; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; border-radius: var(--border-radius); animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .close { color: #aaa; float: left; font-size: 28px; font-weight: bold; cursor: pointer; line-height: 1; }
+        .input-group { margin-bottom: 10px; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 8px; border-radius: var(--border-radius); border: 1px solid #ddd; font-family: inherit; font-size: 1em; box-sizing: border-box; }
+        .phone-number { font-size: 0.85em; color: #555; display: block; }
+        .phone-number i { cursor: pointer; font-size: 1.1em; margin: 0 8px; color: var(--secondary-color); }
+        .student-name-clickable { color: var(--secondary-color); font-weight: bold; cursor: pointer; font-size: 1.2em; }
+        #toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--dark-color); color: white; padding: 12px 20px; border-radius: var(--border-radius); z-index: 2000; visibility: hidden; opacity: 0; transition: opacity 0.5s, visibility 0.5s; }
+        #toast-notification.show { visibility: visible; opacity: 1; }
+        .quantity-assistant .preview { width: 100%; padding: 10px; margin-bottom: 10px; font-size: 1.2em; text-align: center; border: 1px solid #ccc; border-radius: var(--border-radius); box-sizing: border-box; font-family: inherit; direction: rtl; }
+        .quantity-assistant .stepper { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
+        .quantity-assistant .stepper-btn { font-size: 2em; padding: 0 20px; cursor: pointer; user-select: none; color: var(--primary-color); }
+        .quantity-assistant .stepper-value { font-size: 2em; min-width: 60px; text-align: center; }
+        .quantity-assistant .quick-btns { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+        .quantity-assistant .quick-btn { padding: 10px 5px; font-size: 0.9em; border: 1px solid var(--primary-color); background-color: white; color: var(--primary-color); border-radius: var(--border-radius); cursor: pointer; }
+        .quantity-assistant .quick-btn:hover { background-color: #f0f8ff; }
+        .para-selector-container { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
+        .para-selector-container select { flex-grow: 1; padding: 8px; font-size: 1em; border-radius: var(--border-radius); }
+        .save-btn-full { width: 100%; padding: 12px; font-size: 1.1em; margin-top: 15px; background-color: var(--success-color); color: white; border: none; border-radius: var(--border-radius); cursor: pointer;}
+        .management-section { margin: 15px 0; padding: 12px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 1px solid #ddd; }
+        .small-btn { padding: 5px 8px; margin: 2px; font-size: 0.8em; border: none; border-radius: var(--border-radius); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; background-color: var(--secondary-color); color:white; }
+        .month-selector { display: flex; gap: 10px; align-items: center; justify-content: center; margin-bottom: 10px; }
+        
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success-color); }
+        input:disabled + .slider { background-color: #e0e0e0; cursor: not-allowed; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .weekly-graph { display: flex; flex-direction: row-reverse; justify-content: center; align-items: center; gap: 3px; height: 30px; }
+        .graph-bar { width: 6px; height: 18px; background-color: var(--danger-color); border-radius: 3px; transition: background-color 0.3s; }
+        .graph-bar.recited { background-color: var(--success-color); }
+        .graph-bar.holiday { background-color: #ccc; }
+
+        .watchlist-star { color: #ccc; cursor: pointer; font-size: 1.2em; margin-left: 8px; transition: color 0.3s; vertical-align: middle; }
+        .watchlist-star.active { color: var(--warning-color); }
+        .attendance-controls { display: flex; gap: 10px; margin-top: 15px; align-items: center; }
+        .watchlist-toggle-container { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="theme-toggle"><i class="fas fa-moon"></i></button>
+        <h1>📖 مفصل حاضری و سبق رجسٹر</h1>
+        <select class="section-selector" id="section-selector" style="font-size: 1.1em; padding: 8px; width:100%; margin-bottom: 10px; border-radius: var(--border-radius);">
+            <option value="section1">سیکشن 1</option><option value="section2">سیکشن 2</option><option value="section3">سیکشن 3</option>
+        </select>
+        <div class="tabs">
+            <div class="tab active" data-tab="attendance">حاضری</div>
+            <div class="tab" data-tab="stats">اعداد و شمار</div>
+            <div class="tab" data-tab="students">طلباء مینجمنٹ</div>
+        </div>
+        <div class="tab-content active" id="attendance-tab">
+            <div class="date-header">
+                <div class="date-selector"><input type="date" id="date-picker"></div>
+                <h2 id="current-date"></h2>
+            </div>
+            <div class="attendance-controls">
+                <div class="input-group" style="flex-grow:1; margin-bottom:0;">
+                    <input type="search" id="search-attendance" placeholder="طالب علم تلاش کریں..." class="input-group input" style="width:100%; font-size: 1em;">
+                </div>
+                <div class="watchlist-toggle-container">
+                    <label for="watchlist-toggle" style="font-size: 0.9em;">صرف نگران کردہ</label>
+                    <label class="switch">
+                        <input type="checkbox" id="watchlist-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div style="overflow-x: auto;"><table id="attendance-table"><thead><tr><th>نام</th><th>حاضری</th><th>سبق</th><th>سبقی</th><th>منزل</th><th>کارکردگی</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="tab-content" id="stats-tab">
+             <h2>اعداد و شمار</h2>
+             <div class="stats-container" id="stats-container"></div>
+        </div>
+        <div class="tab-content" id="students-tab">
+            <h2>طلباء کی انتظامیہ</h2>
+            <div class="management-section">
+                <h3>نئے طالب علم کا اضافہ</h3>
+                <div class="input-group"><input type="text" id="new-student-name" placeholder="طالب علم کا نام"></div>
+                <div class="input-group"><input type="tel" id="new-student-phone" placeholder="فون نمبر (اختیاری)"></div>
+                <button id="add-student-btn" class="save-btn-full">طالب علم شامل کریں</button>
+            </div>
+             <div class="management-section">
+                <h3 style="margin-top: 20px;">موجودہ طلباء کی فہرست</h3>
+                 <div class="input-group">
+                    <input type="search" id="search-student-list" placeholder="فہرست میں تلاش کریں..." class="input-group input" style="width:100%; font-size: 1em; margin-bottom: 5px;">
+                </div>
+                <div id="student-list" style="max-height: 250px; overflow-y: auto; border: 1px solid #ddd; padding: 5px;"></div>
+            </div>
+            <div class="management-section">
+                <h3>بیک اپ اور بحالی</h3>
+                <p style="font-size:0.9em; color:#555;">اپنے تمام ڈیٹا کا بیک اپ ڈاؤن لوڈ کریں یا پہلے سے محفوظ شدہ بیک اپ کو بحال کریں۔</p>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button id="backup-btn" class="save-btn-full" style="background-color:var(--primary-color);">ڈیٹا کا بیک اپ لیں</button>
+                    <button id="restore-btn" class="save-btn-full" style="background-color:var(--warning-color);">ڈیٹا بحال کریں</button>
+                    <input type="file" id="restore-file-input" accept=".json" style="display:none;">
+                </div>
+            </div>
+            <div class="management-section">
+                <h3>ایپ سیٹنگز</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
+                    <label for="wake-lock-toggle">اسکرین کو ہمیشہ آن رکھیں</label>
+                    <label class="switch">
+                        <input type="checkbox" id="wake-lock-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="student-monthly-report-modal" class="modal"><div class="modal-content"><span class="close">×</span>
+        <div class="month-selector">
+            <button id="prev-month-btn" class="small-btn">گزشتہ ماہ</button>
+            <h3 id="student-report-title" style="margin:0;"></h3>
+            <button id="next-month-btn" class="small-btn">اگلا ماہ</button>
+        </div>
+        <div id="student-report-content" style="max-height: 50vh; overflow-y: auto; margin-top:15px;"></div>
+        <div id="student-report-summary" style="margin-top: 15px; font-weight: bold;"></div>
+        <div class="share-buttons" style="display: flex; gap: 12px; margin-top: 15px; justify-content: center;">
+            <button id="modal-share-whatsapp" class="save-btn-full" style="background-color: #25D366;">واٹس ایپ</button>
+            <button id="modal-share-pdf" class="save-btn-full" style="background-color: #e74c3c;"><i class="fas fa-file-pdf" style="margin-left: 5px;"></i>PDF</button>
+        </div>
+    </div></div>
+    <div id="quantity-assistant-modal" class="modal"><div class="modal-content quantity-assistant"><span class="close">×</span><h2 id="quantity-title">مقدار درج کریں</h2>
+        <input type="text" id="quantity-preview" class="preview">
+        <div class="stepper"><span class="stepper-btn" id="stepper-minus">-</span><span id="stepper-value" class="stepper-value">1</span><span class="stepper-btn" id="stepper-plus">+</span></div>
+        <div class="quick-btns" id="quick-btns-container"></div>
+        <div class="para-selector-container"><label for="para-selector">پارہ نمبر:</label><select id="para-selector"></select></div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button id="save-quantity-assistant" class="save-btn-full">محفوظ کریں</button>
+            <button id="clear-quantity-btn" class="save-btn-full" style="background-color: var(--warning-color);">مٹائیں</button>
+        </div>
+    </div></div>
+    <div id="phone-modal" class="modal"><div class="modal-content"><span class="close">×</span><h2>فون نمبر میں ترمیم</h2><input type="tel" id="phone-input" class="input-group"><button id="save-phone" class="save-btn-full">محفوظ کریں</button></div></div>
+    <div id="name-modal" class="modal"><div class="modal-content"><span class="close">×</span><h2>نام میں ترمیم</h2><input type="text" id="name-input" class="input-group"><button id="save-name" class="save-btn-full">محفوظ کریں</button></div></div>
+    <div id="toast-notification"></div>
+
+<script>
+// ==================================================================
+// سروس ورکر کو رجسٹر کرنے کا کوڈ
+// ==================================================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').then(reg => console.log('Service Worker: Registered')).catch(err => console.log(`Service Worker: Error: ${err}`));
+    });
+}
+// ==================================================================
+
+window.addEventListener('DOMContentLoaded', () => {
+    'use strict';
+    // ==================================================================
+    // CAPACITOR PLUGINS
+    // ==================================================================
+    let Filesystem, Directory, Encoding, Share;
+    const isNative = window.Capacitor?.isNativePlatform() ?? false;
+    if (isNative) {
+        try {
+            const p = window.Capacitor?.Plugins;
+            if (p) { Filesystem = p.Filesystem; Share = p.Share; } 
+            else if (window.capacitorExports) { ({ Filesystem, Share } = window.capacitorExports); }
+            if (Filesystem) { Directory = Filesystem.Directory; Encoding = Filesystem.Encoding; }
+        } catch (e) { console.error("Capacitor plugins could not be loaded:", e); }
+    }
+    
+    // ==================================================================
+    // ایپ کے متغیرات (Variables)
+    // ==================================================================
+    let currentDate = new Date();
+    let attendanceData = { sections: { section1: { students: [], attendance: {} } }, studentDetails: {}, watchlist: [], settings: {} };
+    const DATA_KEY = 'attendanceData_v25_final';
+    let currentModalInfo = {};
+    let wakeLock = null;
+
+    // ==================================================================
+    // DOM عناصر (Elements)
+    // ==================================================================
+    const themeToggle = document.getElementById('theme-toggle');
+    const wakeLockToggle = document.getElementById('wake-lock-toggle');
+    const watchlistToggle = document.getElementById('watchlist-toggle');
+    const sectionSelector = document.getElementById('section-selector');
+    const attendanceTableBody = document.querySelector('#attendance-table tbody');
+    const studentListContainer = document.getElementById('student-list');
+    const restoreFileInput = document.getElementById('restore-file-input');
+    const searchAttendanceInput = document.getElementById('search-attendance');
+    const searchStudentListInput = document.getElementById('search-student-list');
+    const quantityPreview = document.getElementById('quantity-preview');
+    const paraSelector = document.getElementById('para-selector');
+    
+    // ==================================================================
+    // فنکشنز (Functions)
+    // ==================================================================
+    const showToast = (message) => {
+        const toast = document.getElementById('toast-notification');
+        if(!toast) return;
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    };
+
+    const openModal = (modalId) => document.getElementById(modalId)?.classList.add('active');
+    const closeModal = (modalId) => document.getElementById(modalId)?.classList.remove('active');
+
+    const applyTheme = (theme) => {
+        if (theme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        } else {
+            document.body.classList.remove('dark-theme');
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        }
+    };
+
+    const manageWakeLock = async () => {
+        if (!('wakeLock' in navigator)) {
+            if(wakeLockToggle) wakeLockToggle.disabled = true;
+            return;
+        }
+        try {
+            if (attendanceData.settings.wakeLock && document.visibilityState === 'visible') {
+                if (wakeLock === null) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLock.addEventListener('release', () => { wakeLock = null; });
+                }
+            } else {
+                if (wakeLock !== null) { await wakeLock.release(); wakeLock = null; }
+            }
+        } catch (err) {
+            if (wakeLock) { await wakeLock.release(); wakeLock = null; }
+        }
+    };
+
+    const saveData = () => { try { localStorage.setItem(DATA_KEY, JSON.stringify(attendanceData)); } catch (e) { showToast('ڈیٹا محفوظ کرنے میں خرابی'); } };
+    
+    const loadData = () => {
+        const savedData = localStorage.getItem(DATA_KEY);
+        if (savedData) {
+            try {
+                const parsedData = JSON.parse(savedData);
+                if (parsedData && parsedData.sections) attendanceData = parsedData;
+            } catch { console.error("Failed to parse data."); }
+        }
+        attendanceData.watchlist = attendanceData.watchlist || [];
+        attendanceData.settings = attendanceData.settings || {};
+        attendanceData.sections = attendanceData.sections || {};
+        ['section1', 'section2', 'section3'].forEach(sec => {
+            attendanceData.sections[sec] = attendanceData.sections[sec] || { students: [], attendance: {} };
+        });
+        attendanceData.studentDetails = attendanceData.studentDetails || {};
+        sectionSelector.value = localStorage.getItem('lastSection_v25') || 'section1';
+        applyTheme(attendanceData.settings.theme);
+        if(wakeLockToggle) wakeLockToggle.checked = !!attendanceData.settings.wakeLock;
+        manageWakeLock();
+    };
+
+    const updateDateDisplay = () => {
+        document.getElementById('date-picker').valueAsDate = currentDate;
+        document.getElementById('current-date').textContent = currentDate.toLocaleDateString('ur-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    };
+
+    const getSortedStudentMap = (section) => (attendanceData.sections[section]?.students || []).map((name, index) => ({ name, originalIndex: index })).sort((a, b) => a.name.localeCompare(b.name, 'ur'));
+    
+    const applyFilters = () => {
+        const searchTerm = searchAttendanceInput.value.trim().toLowerCase();
+        const showWatchedOnly = watchlistToggle.checked;
+        attendanceTableBody.querySelectorAll('tr').forEach(row => {
+            const studentNameEl = row.querySelector('.student-name-clickable');
+            const starEl = row.querySelector('.watchlist-star');
+            if (studentNameEl && starEl) {
+                const studentName = studentNameEl.textContent.trim().toLowerCase();
+                const isOnWatchlist = starEl.classList.contains('active');
+                const searchMatch = studentName.includes(searchTerm);
+                const watchlistMatch = !showWatchedOnly || (showWatchedOnly && isOnWatchlist);
+                row.style.display = (searchMatch && watchlistMatch) ? '' : 'none';
+            }
+        });
+    };
+
+    const renderAttendanceTable = () => {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        const section = sectionSelector.value;
+        if (!attendanceData.sections[section]?.attendance[dateStr]) { initAppForDate(); }
+        const records = attendanceData.sections[section].attendance[dateStr] || [];
+        const sortedStudents = getSortedStudentMap(section);
+        attendanceTableBody.innerHTML = '';
+        sortedStudents.forEach(student => {
+            const index = student.originalIndex;
+            const record = records[index] || {};
+            const phone = (attendanceData.studentDetails[student.name] || {}).phone || '';
+            let graphHTML = '';
+            for (let i = 0; i < 6; i++) {
+                const dayOffset = (currentDate.getDay() + 6 - i) % 7;
+                const day = new Date(currentDate);
+                day.setDate(day.getDate() - dayOffset);
+                const dayStr = day.toISOString().split('T')[0];
+                const pastRecord = attendanceData.sections[section]?.attendance[dayStr]?.[index];
+                const isHoliday = day.getDay() === 4; // जुमेरात
+                let barClass = isHoliday ? 'holiday' : (pastRecord && pastRecord.lesson ? 'recited' : '');
+                graphHTML += `<span class="graph-bar ${barClass}" title="${day.toLocaleDateString('ur-PK')}"></span>`;
+            }
+
+            const row = document.createElement('tr');
+            row.className = record.present ? 'present-row' : 'absent-row';
+            row.innerHTML = `
+                <td>
+                    <i class="fas fa-star watchlist-star ${attendanceData.watchlist.includes(student.name) ? 'active' : ''}" data-action="toggle-watchlist" data-student-name="${student.name}"></i>
+                    <span class="student-name-clickable" data-action="show-report" data-student-name="${student.name}">${student.name}</span>
+                    <span class="phone-number">
+                        <i class="fas fa-edit" data-action="edit-name" data-index="${index}"></i> <i class="fas fa-phone" data-action="edit-phone" data-student-name="${student.name}"></i> ${phone}
+                    </span>
+                </td>
+                <td style="text-align:center;"><label class="switch"><input type="checkbox" class="attendance-check" data-index="${index}" data-field="present" ${record.present ? 'checked' : ''}><span class="slider"></span></label></td>
+                <td><div class="attendance-cell-content"><label class="switch"><input type="checkbox" class="attendance-check" data-index="${index}" data-field="lesson" ${record.lesson ? 'checked' : ''} ${!record.present ? 'disabled' : ''}><span class="slider"></span></label><span class="quantity-info" data-action="edit-quantity" data-index="${index}" data-field="lessonQuantity">${record.lessonQuantity || 'مقدار'}</span></div></td>
+                <td><div class="attendance-cell-content"><label class="switch"><input type="checkbox" class="attendance-check" data-index="${index}" data-field="homework" ${record.homework ? 'checked' : ''} ${!record.present ? 'disabled' : ''}><span class="slider"></span></label><span class="quantity-info" data-action="edit-quantity" data-index="${index}" data-field="homeworkQuantity">${record.homeworkQuantity || 'مقدار'}</span></div></td>
+                <td><div class="attendance-cell-content"><label class="switch"><input type="checkbox" class="attendance-check" data-index="${index}" data-field="milestone" ${record.milestone ? 'checked' : ''} ${!record.present ? 'disabled' : ''}><span class="slider"></span></label><span class="quantity-info" data-action="edit-quantity" data-index="${index}" data-field="milestoneQuantity">${record.milestoneQuantity || 'مقدار'}</span></div></td>
+                <td><div class="weekly-graph">${graphHTML}</div></td>`;
+            attendanceTableBody.appendChild(row);
+        });
+        applyFilters(); 
+    };
+
+    const renderStudentList = () => {
+        const section = sectionSelector.value;
+        const sortedStudents = getSortedStudentMap(section);
+        studentListContainer.innerHTML = '';
+        sortedStudents.forEach(student => {
+            const item = document.createElement('div');
+            item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:5px; border-bottom:1px solid #eee;';
+            item.innerHTML = `<span>${student.name}</span><button class="small-btn" data-action="delete-student" data-index="${student.originalIndex}" style="background-color: var(--danger-color); color:white;">حذف</button>`;
+            studentListContainer.appendChild(item);
+        });
+        applyStudentListSearch();
+    };
+
+    const applyStudentListSearch = () => {
+        const searchTerm = searchStudentListInput.value.trim().toLowerCase();
+        studentListContainer.querySelectorAll('div').forEach(item => {
+            const name = item.querySelector('span')?.textContent.trim().toLowerCase();
+            if(name) item.style.display = name.includes(searchTerm) ? 'flex' : 'none';
+        });
+    };
+    
+    const findInactiveStudentsByCategory = (category) => {
+        const section = sectionSelector.value;
+        const students = attendanceData.sections[section]?.students || [];
+        if (!students.length) return [];
+        const attendance = attendanceData.sections[section]?.attendance || {};
+        const inactiveStudents = [];
+        students.forEach((student, studentIndex) => {
+            let hasRecitedInCategory = false;
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(currentDate); date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                const record = attendance[dateStr] && attendance[dateStr][studentIndex];
+                if (record && record[category]) { hasRecitedInCategory = true; break; }
+            }
+            if (!hasRecitedInCategory) { inactiveStudents.push(student); }
+        });
+        return inactiveStudents.sort((a,b) => a.localeCompare(b, 'ur'));
+    };
+    
+    const renderStats = () => {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        const section = sectionSelector.value;
+        const students = attendanceData.sections[section]?.students || [];
+        const records = attendanceData.sections[section]?.attendance[dateStr] || [];
+        let presentCount = 0;
+        let absentStudents = [], lessonStudents = [], homeworkStudents = [], milestoneStudents = [];
+        if (students.length > 0) {
+            students.forEach((student, index) => {
+                const record = records[index] || {};
+                if (record.present) {
+                    presentCount++;
+                    if (record.lesson) lessonStudents.push(student);
+                    if (record.homework) homeworkStudents.push(student);
+                    if (record.milestone) milestoneStudents.push(student);
+                } else { absentStudents.push(student); }
+            });
+        }
+        absentStudents.sort((a,b) => a.localeCompare(b, 'ur'));
+        lessonStudents.sort((a,b) => a.localeCompare(b, 'ur'));
+        homeworkStudents.sort((a,b) => a.localeCompare(b, 'ur'));
+        milestoneStudents.sort((a,b) => a.localeCompare(b, 'ur'));
+        const inactiveInLesson = findInactiveStudentsByCategory('lesson');
+        const inactiveInHomework = findInactiveStudentsByCategory('homework');
+        const inactiveInMilestone = findInactiveStudentsByCategory('milestone');
+        const createStatCard = (title, count, names, bgColor, listTitle) => {
+            let namesHtml = '';
+            if (names && names.length > 0) { namesHtml = `<div style="text-align: right; margin-top: 10px; font-size: 0.95em; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 8px;"><p style="font-weight: bold; margin-bottom: 5px; color: var(--dark-color);">${listTitle}:</p><ul style="list-style-type: none; padding-right: 10px; margin: 0; column-count: 2; column-gap: 10px;">${names.map(name => `<li style="margin-bottom: 4px;">${name}</li>`).join('')}</ul></div>`; }
+            return `<div style="background-color: ${bgColor}; padding: 15px; border-radius: var(--border-radius); box-shadow: var(--box-shadow);"><div style="display: flex; justify-content: space-between; align-items: center; text-align: right;"><h4 style="margin: 0; font-size: 1.1em;">${title}</h4><p style="font-size: 1.8em; font-weight: bold; margin: 0; color: var(--dark-color);">${count}</p></div>${namesHtml}</div>`;
+        };
+        document.getElementById('stats-container').innerHTML = `<h3 style="text-align:center;">آج کا خلاصہ</h3><div style="display: flex; flex-direction: column; gap: 12px;">
+            ${createStatCard('حاضر طلباء', presentCount, null, '#e8f5e9', '')}
+            ${createStatCard('غیر حاضر طلباء', absentStudents.length, absentStudents, '#ffecec', 'غیر حاضر فہرست')}
+            ${createStatCard('سبق سنانے والے', lessonStudents.length, lessonStudents, '#e3f2fd', 'سبق سنانے والے')}
+            ${createStatCard('سبقی سنانے والے', homeworkStudents.length, homeworkStudents, '#fff9c4', 'سبقی سنانے والے')}
+            ${createStatCard('منزل سنانے والے', milestoneStudents.length, milestoneStudents, '#fce4ec', 'منزل سنانے والے')}</div>
+            <hr style="margin:20px 0;"><h3 style="text-align:center;">ہفتہ وار کارکردگی کا جائزہ</h3><div style="display: flex; flex-direction: column; gap: 12px;">
+            ${createStatCard('جنہوں نے 7 دن سے سبق نہیں سنایا', inactiveInLesson.length, inactiveInLesson, 'var(--inactive-color)', 'طلباء کی فہرست')}
+            ${createStatCard('جنہوں نے 7 دن سے سبقی نہیں سنائی', inactiveInHomework.length, inactiveInHomework, 'var(--inactive-color)', 'طلباء کی فہرست')}
+            ${createStatCard('جنہوں نے 7 دن سے منزل نہیں سنائی', inactiveInMilestone.length, inactiveInMilestone, 'var(--inactive-color)', 'طلباء کی فہرست')}</div>`;
+    };
+    
+    const generateMonthlyReportFor = (studentName, month, year, section) => {
+        const report = { records: [], totalDays: 0, presentDays: 0 };
+        const studentIndex = attendanceData.sections[section]?.students.indexOf(studentName);
+        if (studentIndex === -1) return report;
+        const attendance = attendanceData.sections[section]?.attendance || {};
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateObj = new Date(year, month, day);
+            const dateStr = dateObj.toISOString().split('T')[0];
+            if (attendance[dateStr] && attendance[dateStr][studentIndex]) {
+                const record = attendance[dateStr][studentIndex];
+                report.records.push({ date: dateStr, ...record });
+                report.totalDays++;
+                if(record.present) report.presentDays++;
+            }
+        }
+        report.records.sort((a,b) => new Date(a.date) - new Date(b.date));
+        return report;
+    };
+    
+    const renderAndShowStudentReport = (studentName, dateForReport) => {
+        currentModalInfo.reportDate = dateForReport;
+        const month = dateForReport.getMonth(), year = dateForReport.getFullYear();
+        const section = sectionSelector.value;
+        document.getElementById('student-report-title').textContent = `${studentName} (${new Date(year, month).toLocaleString('ur-PK', { month: 'long', year: 'numeric' })})`;
+        const reportData = generateMonthlyReportFor(studentName, month, year, section);
+        const reportContent = document.getElementById('student-report-content');
+        let tableHTML = `<table style="font-size:0.9em;width:100%;"><thead><tr><th>تاریخ</th><th>حاضری</th><th>سبق</th><th>سبقی</th><th>منزل</th></tr></thead><tbody>`;
+        if (reportData.records.length > 0) {
+            reportData.records.forEach(rec => {
+                tableHTML += `<tr class="${rec.present ? 'present-row' : 'absent-row'}">
+                    <td>${new Date(rec.date).toLocaleDateString('ur-PK', {day:'numeric', month:'short'})}</td>
+                    <td>${rec.present ? 'حاضر' : 'غیرحاضر'}</td>
+                    <td>${rec.present ? (rec.lesson ? (rec.lessonQuantity || '✔') : '✘') : '-'}</td>
+                    <td>${rec.present ? (rec.homework ? (rec.homeworkQuantity || '✔') : '✘') : '-'}</td>
+                    <td>${rec.present ? (rec.milestone ? (rec.milestoneQuantity || '✔') : '✘') : '-'}</td></tr>`;
+            });
+        } else {
+            tableHTML += `<tr><td colspan="5" style="text-align:center;">اس مہینے کا کوئی ریکارڈ موجود نہیں۔</td></tr>`;
+        }
+        reportContent.innerHTML = tableHTML + '</tbody></table>';
+        const presentPercent = reportData.totalDays > 0 ? Math.round((reportData.presentDays/reportData.totalDays)*100) : 0;
+        document.getElementById('student-report-summary').textContent = `خلاصہ: ${reportData.presentDays}/${reportData.totalDays} دن حاضری (${presentPercent}%)`;
+        openModal('student-monthly-report-modal');
+    };
+    
+    const showStudentMonthlyReportModal = (studentName) => {
+        currentModalInfo.studentName = studentName;
+        renderAndShowStudentReport(studentName, new Date());
+    };
+    
+    const generateMonthlyReportText = (studentName, dateForReport) => {
+        const month = dateForReport.getMonth(), year = dateForReport.getFullYear();
+        const section = sectionSelector.value;
+        const reportTitle = `*${studentName} کی ماہانہ کارکردگی رپورٹ* (${new Date(year, month).toLocaleString('ur-PK', { month: 'long', year: 'numeric' })})`;
+        const reportData = generateMonthlyReportFor(studentName, month, year, section);
+        const presentPercent = reportData.totalDays > 0 ? Math.round((reportData.presentDays / reportData.totalDays) * 100) : 0;
+        const summaryText = `*خلاصہ:*\nکل ایام: ${reportData.totalDays}\nحاضری: ${reportData.presentDays} دن (${presentPercent}%)\nغیر حاضری: ${reportData.totalDays - reportData.presentDays} دن`;
+        let monthlyReportText = `${reportTitle}\n\n${summaryText}\n\n*روزانہ کی تفصیل:*\n`;
+        reportData.records.forEach(rec => {
+            const dateString = new Date(rec.date).toLocaleDateString('ur-PK', { day: '2-digit', month: 'short' });
+            let dailyRecord = `*${dateString}:* `;
+            if (rec.present) {
+                dailyRecord += "حاضر ✅\n";
+                let details = [];
+                if (rec.lesson) details.push(`   • *سبق:* ${rec.lessonQuantity || 'سنایا'}`);
+                if (rec.homework) details.push(`   • *سبقی:* ${rec.homeworkQuantity || 'سنائی'}`);
+                if (rec.milestone) details.push(`   • *منزل:* ${rec.milestoneQuantity || 'سنائی'}`);
+                if (details.length > 0) dailyRecord += details.join('\n');
+                else dailyRecord += "   • کوئی سبق نہیں سنایا گیا۔";
+            } else { dailyRecord += "غیر حاضر ❌"; }
+            monthlyReportText += dailyRecord + "\n\n";
+        });
+        monthlyReportText += `\n- بذریعہ حفظ ٹریکر ایپ`;
+        return monthlyReportText;
+    };
+    
+    const formatPhoneNumberForWhatsApp = (phone) => { let cleaned = phone.replace(/\D/g, ''); if (cleaned.startsWith('03')) cleaned = '92' + cleaned.substring(1); return cleaned; };
+
+    const initAppForDate = () => {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        const section = sectionSelector.value;
+        const students = attendanceData.sections[section]?.students || [];
+        if (!attendanceData.sections[section]?.attendance[dateStr] || attendanceData.sections[section].attendance[dateStr].length !== students.length) {
+            const defaultRec = () => ({ present: false, lesson: false, homework: false, milestone: false, lessonQuantity: '', homeworkQuantity: '', milestoneQuantity: '' });
+            const existing = attendanceData.sections[section]?.attendance[dateStr] || [];
+            attendanceData.sections[section].attendance[dateStr] = Array.from({length: students.length}, (_, i) => existing[i] || defaultRec());
+        }
+    };
+
+    const initApp = () => {
+        initAppForDate();
+        searchAttendanceInput.value = '';
+        if(searchStudentListInput) searchStudentListInput.value = '';
+        updateDateDisplay();
+        renderAttendanceTable();
+        renderStudentList();
+    };
+    
+    (function setupListeners() {
+        themeToggle.addEventListener('click', () => {
+            const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+            attendanceData.settings.theme = newTheme; applyTheme(newTheme); saveData();
+        });
+
+        if(wakeLockToggle) wakeLockToggle.addEventListener('change', () => {
+            attendanceData.settings.wakeLock = wakeLockToggle.checked; manageWakeLock(); saveData();
+        });
+        document.addEventListener('visibilitychange', manageWakeLock);
+        
+        watchlistToggle.addEventListener('change', applyFilters);
+        searchAttendanceInput.addEventListener('input', applyFilters);
+        if(searchStudentListInput) searchStudentListInput.addEventListener('input', applyStudentListSearch);
+
+        document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', function() {
+            document.querySelector('.tab.active')?.classList.remove('active');
+            document.querySelector('.tab-content.active')?.classList.remove('active');
+            this.classList.add('active');
+            document.getElementById(this.dataset.tab + '-tab').classList.add('active');
+            if (this.dataset.tab === 'stats') { renderStats(); }
+        }));
+
+        document.getElementById('date-picker').addEventListener('change', (e) => { 
+            const newDate = e.target.valueAsDate;
+            if(newDate) {
+                currentDate = new Date(newDate.valueOf() + newDate.getTimezoneOffset() * 60000);
+                initApp();
+            }
+        });
+        sectionSelector.addEventListener('change', () => { 
+            localStorage.setItem('lastSection_v25', sectionSelector.value); 
+            initApp(); 
+        });
+
+        attendanceTableBody.addEventListener('change', (e) => {
+            if (e.target.classList.contains('attendance-check')) {
+                const index = parseInt(e.target.dataset.index), field = e.target.dataset.field;
+                const dateStr = currentDate.toISOString().split('T')[0], section = sectionSelector.value;
+                const record = attendanceData.sections[section].attendance[dateStr][index];
+                record[field] = e.target.checked;
+                if (field === 'present' && !e.target.checked) { record.lesson = record.homework = record.milestone = false; }
+                saveData(); renderAttendanceTable(); 
+            }
+        });
+        
+        document.getElementById('add-student-btn').addEventListener('click', () => {
+            const nameInput = document.getElementById('new-student-name');
+            const phoneInput = document.getElementById('new-student-phone');
+            const newName = nameInput.value.trim();
+            const section = sectionSelector.value;
+            const students = attendanceData.sections[section].students;
+            if (newName && !students.includes(newName)) {
+                students.push(newName);
+                Object.keys(attendanceData.sections[section].attendance).forEach(dateStr => {
+                    attendanceData.sections[section].attendance[dateStr].push({ present: false, lesson: false, homework: false, milestone: false, lessonQuantity: '', homeworkQuantity: '', milestoneQuantity: '' });
+                });
+                if (phoneInput.value.trim()) {
+                    if(!attendanceData.studentDetails) attendanceData.studentDetails = {};
+                    attendanceData.studentDetails[newName] = { phone: phoneInput.value.trim() };
+                }
+                saveData(); initApp(); 
+                nameInput.value = ''; phoneInput.value = '';
+                showToast(`طالب علم "${newName}" شامل ہو گیا ہے۔`);
+            } else { showToast("نام خالی ہے یا پہلے سے موجود ہے۔"); }
+        });
+
+        document.getElementById('backup-btn').addEventListener('click', async () => {
+            const dataStr = JSON.stringify(attendanceData, null, 2);
+            const fileName = `hifz_tracker_backup_${new Date().toISOString().split('T')[0]}.json`;
+            if (isNative && Filesystem && Share) {
+                try {
+                    const result = await Filesystem.writeFile({ path: fileName, data: dataStr, directory: Directory.Cache, encoding: Encoding.UTF8 });
+                    await Share.share({ title: 'حفظ ٹریکر بیک اپ', url: result.uri, dialogTitle: 'بیک اپ فائل شیئر کریں' });
+                } catch (error) { showToast('بیک اپ شیئر کرنے میں خرابی ہوئی۔'); }
+            } else {
+                try {
+                    const blob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = fileName;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } catch (error) { showToast('بیک اپ ڈاؤن لوڈ کرنے میں خرابی ہوئی۔'); }
+            }
+        });
+        
+        document.getElementById('restore-btn').addEventListener('click', () => { restoreFileInput.click(); });
+        
+        restoreFileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!confirm('کیا آپ واقعی بیک اپ بحال کرنا چاہتے ہیں؟ موجودہ تمام ڈیٹا مٹا دیا جائے گا۔')) { event.target.value = null; return; }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const restoredData = JSON.parse(e.target.result);
+                    if (restoredData && restoredData.sections) {
+                        localStorage.setItem(DATA_KEY, JSON.stringify(restoredData));
+                        loadData(); initApp();  
+                        showToast('بیک اپ کامیابی سے بحال ہو گیا ہے۔');
+                    } else { throw new Error('Invalid file format.'); }
+                } catch (error) { showToast('فائل خراب ہے یا درست فارمیٹ میں نہیں۔'); }
+                event.target.value = null; 
+            };
+            reader.readAsText(file);
+        });
+
+        document.body.addEventListener('click', (e) => {
+            const target = e.target.closest('[data-action]'); if (!target) return;
+            const action = target.dataset.action;
+            const index = parseInt(target.dataset.index);
+            const studentName = target.dataset.studentName;
+            const section = sectionSelector.value;
+            const students = attendanceData.sections[section]?.students;
+
+            switch (action) {
+                case 'toggle-watchlist':
+                    if(!studentName) return;
+                    const wIndex = attendanceData.watchlist.indexOf(studentName);
+                    if (wIndex > -1) { attendanceData.watchlist.splice(wIndex, 1); } else { attendanceData.watchlist.push(studentName); }
+                    saveData(); renderAttendanceTable();
+                    break;
+                case 'delete-student':
+                    const studentToDelete = students[index];
+                    if (confirm(`کیا آپ واقعی طالب علم "${studentToDelete}" کو حذف کرنا چاہتے ہیں؟`)) {
+                        students.splice(index, 1);
+                        delete attendanceData.studentDetails[studentToDelete];
+                        Object.values(attendanceData.sections[section].attendance).forEach(day => { if(day.length > index) day.splice(index, 1) });
+                        saveData(); initApp();
+                    }
+                    break;
+                case 'edit-name':
+                    currentModalInfo = { originalIndex: index, oldName: students[index] };
+                    document.getElementById('name-input').value = students[index];
+                    openModal('name-modal');
+                    break;
+                 case 'edit-phone':
+                    currentModalInfo = { studentName };
+                    document.getElementById('phone-input').value = (attendanceData.studentDetails[studentName] || {}).phone || '';
+                    openModal('phone-modal');
+                    break;
+                case 'show-report':
+                    showStudentMonthlyReportModal(studentName);
+                    break;
+                case 'edit-quantity':
+                    const field = target.dataset.field;
+                    const dateStr = currentDate.toISOString().split('T')[0];
+                    const record = attendanceData.sections[section].attendance[dateStr][index];
+                    currentModalInfo = { index, field };
+                    document.getElementById('quantity-title').textContent = `${students[index]} - ${field.replace('Quantity', '')}`;
+                    document.getElementById('quantity-preview').value = record[field] || '';
+                    document.getElementById('stepper-value').textContent = parseInt(record[field]) || 1;
+                    openModal('quantity-assistant-modal');
+                    break;
+            }
+        });
+
+        document.querySelectorAll('.modal .close').forEach(btn => btn.addEventListener('click', () => closeModal(btn.closest('.modal').id)));
+        document.querySelectorAll('.modal').forEach(modal => modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(modal.id); }));
+
+        document.getElementById('save-name').addEventListener('click', () => {
+            const { originalIndex, oldName } = currentModalInfo;
+            const newName = document.getElementById('name-input').value.trim();
+            const section = sectionSelector.value;
+            const students = attendanceData.sections[section].students;
+            if (!newName) return showToast('نام خالی نہیں ہو سکتا۔');
+            if (newName !== oldName && students.includes(newName)) return showToast('یہ نام پہلے سے موجود ہے۔');
+            students[originalIndex] = newName;
+            if (attendanceData.studentDetails[oldName]) {
+                attendanceData.studentDetails[newName] = attendanceData.studentDetails[oldName];
+                if (oldName !== newName) delete attendanceData.studentDetails[oldName];
+            }
+            saveData(); initApp(); closeModal('name-modal');
+        });
+
+        document.getElementById('save-phone').addEventListener('click', () => {
+            const { studentName } = currentModalInfo;
+            const newPhone = document.getElementById('phone-input').value.trim();
+            if (!attendanceData.studentDetails[studentName]) attendanceData.studentDetails[studentName] = {};
+            attendanceData.studentDetails[studentName].phone = newPhone;
+            saveData(); initApp(); closeModal('phone-modal');
+        });
+
+        document.getElementById('save-quantity-assistant').addEventListener('click', () => {
+            const { index, field } = currentModalInfo;
+            const section = sectionSelector.value;
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const value = document.getElementById('quantity-preview').value.trim();
+            const record = attendanceData.sections[section].attendance[dateStr][index];
+            record[field] = value;
+            record[field.replace('Quantity', '')] = !!value; 
+            saveData(); renderAttendanceTable(); closeModal('quantity-assistant-modal');
+        });
+        
+        document.getElementById('clear-quantity-btn').addEventListener('click', () => { quantityPreview.value = ''; });
+
+        document.getElementById('modal-share-whatsapp').addEventListener('click', () => {
+            const phone = (attendanceData.studentDetails[currentModalInfo.studentName] || {}).phone;
+            if (!phone) return showToast('اس طالب علم کا فون نمبر موجود نہیں');
+            const reportText = generateMonthlyReportText(currentModalInfo.studentName, currentModalInfo.reportDate);
+            window.open(`https://wa.me/${formatPhoneNumberForWhatsApp(phone)}?text=${encodeURIComponent(reportText)}`, '_blank');
+        });
+        
+        document.getElementById('quick-btns-container').addEventListener('click', (e) => { if (e.target.classList.contains('quick-btn')) { quantityPreview.value += (quantityPreview.value ? ' ' : '') + e.target.textContent; } });
+        
+        paraSelector.addEventListener('change', () => {
+            if (paraSelector.value) {
+                quantityPreview.value = (quantityPreview.value + ` پارہ ${paraSelector.value}`).trim();
+                paraSelector.value = "";
+            }
+        });
+
+    })();
+
+    document.getElementById('quick-btns-container').innerHTML = ['لائن', 'صفحہ', 'رکوع', 'آیت', 'ربع', 'آدھا', 'پون', 'مکمل', 'پہلا', 'دوسرا', 'تیسرا', 'چوتھا'].map(text => `<button class="quick-btn">${text}</button>`).join('');
+    
+    paraSelector.innerHTML = '<option value="">پارہ منتخب کریں</option>';
+    for (let i = 1; i <= 30; i++) {
+        paraSelector.innerHTML += `<option value="${i}">پارہ نمبر ${i}</option>`;
+    }
+    
+    loadData();
+    initApp();
+});
+</script>
+</body>
+</html>
