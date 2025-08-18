@@ -40,7 +40,7 @@
         .dark-theme .tab.active { background-color: var(--primary-color); border-color: var(--primary-color); color: white; }
         .dark-theme .tab-content, .dark-theme #student-list { border-color: #444; }
         .dark-theme th { background-color: var(--dark-color); }
-        .dark-theme td, .dark-theme th { border-bottom-color: #444 !important; }
+        .dark-theme td, .dark-theme th, .dark-theme #student-list div { border-bottom-color: #444 !important; }
         .dark-theme tr.present-row { background-color: #2a3b2a; }
         .dark-theme tr.absent-row { background-color: #4a2c2c; }
         .dark-theme .input-group input, .dark-theme .input-group select, .dark-theme .section-selector, .dark-theme .para-selector-container select { background-color: #333; color: #f1f1f1; border-color: #555; }
@@ -98,6 +98,36 @@
         .small-btn { padding: 5px 8px; margin: 2px; font-size: 0.8em; border: none; border-radius: var(--border-radius); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; background-color: var(--secondary-color); color:white; }
         .month-selector { display: flex; gap: 10px; align-items: center; justify-content: center; margin-bottom: 10px; }
         
+        /* --- گول چیک باکس کا نیا اسٹائل --- */
+        .round-checkbox { display: inline-block; position: relative; cursor: pointer; user-select: none; }
+        .round-checkbox input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .checkmark {
+            position: relative;
+            display: inline-block;
+            height: 22px;
+            width: 22px;
+            background-color: #eee;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        .dark-theme .checkmark { background-color: #333; border-color: #555; }
+        .round-checkbox input:checked ~ .checkmark { background-color: var(--success-color); border-color: var(--success-color); }
+        .round-checkbox input:disabled ~ .checkmark { background-color: #f0f0f0; border-color: #e0e0e0; cursor: not-allowed; }
+        .dark-theme .round-checkbox input:disabled ~ .checkmark { background-color: #222; border-color: #444; }
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 7px;
+            top: 7px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+        }
+        .round-checkbox input:checked ~ .checkmark:after { display: block; }
+        
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
@@ -107,7 +137,7 @@
         input:checked + .slider:before { transform: translateX(20px); }
 
         .weekly-graph { display: flex; flex-direction: row-reverse; justify-content: center; align-items: center; gap: 3px; height: 30px; }
-        .graph-bar { width: 6px; height: 18px; background-color: var(--danger-color); border-radius: 3px; transition: background-color 0.3s; }
+        .graph-bar { width: 6px; height: 18px; background-color: #e0e0e0; border-radius: 3px; transition: background-color 0.3s; }
         .graph-bar.recited { background-color: var(--success-color); }
         .graph-bar.holiday { background-color: #ccc; }
 
@@ -369,15 +399,20 @@ window.addEventListener('DOMContentLoaded', () => {
             const record = records[index] || {};
             const phone = (attendanceData.studentDetails[student.name] || {}).phone || '';
             let graphHTML = '';
-            for (let i = 0; i < 6; i++) {
-                const dayOffset = (currentDate.getDay() + 6 - i) % 7;
-                const day = new Date(currentDate);
-                day.setDate(day.getDate() - dayOffset);
+            
+            const dayOfWeek = currentDate.getDay(); // 0=Sun, 5=Fri
+            const daysSinceFriday = (dayOfWeek < 5) ? (dayOfWeek + 2) : (dayOfWeek - 5);
+            const startOfWeek = new Date(currentDate);
+            startOfWeek.setDate(currentDate.getDate() - daysSinceFriday);
+            
+            for (let i = 0; i < 6; i++) { // Fri, Sat, Sun, Mon, Tue, Wed
+                const day = new Date(startOfWeek);
+                day.setDate(startOfWeek.getDate() + i);
                 const dayStr = day.toISOString().split('T')[0];
                 const pastRecord = attendanceData.sections[section]?.attendance[dayStr]?.[index];
-                const isHoliday = day.getDay() === 4; // जुमेरात
+                const isHoliday = day.getDay() === 4; // Thursday
                 let barClass = isHoliday ? 'holiday' : (pastRecord && pastRecord.lesson ? 'recited' : '');
-                graphHTML += `<span class="graph-bar ${barClass}" title="${day.toLocaleDateString('ur-PK')}"></span>`;
+                graphHTML += `<span class="graph-bar ${barClass}" title="${day.toLocaleDateString('ur-PK', {weekday: 'short'})}"></span>`;
             }
 
             const row = document.createElement('tr');
@@ -390,10 +425,10 @@ window.addEventListener('DOMContentLoaded', () => {
                         <i class="fas fa-edit" data-action="edit-name" data-index="${index}"></i> <i class="fas fa-phone" data-action="edit-phone" data-student-name="${student.name}"></i> ${phone}
                     </span>
                 </td>
-                <td style="text-align:center;"><label class="switch"><input type="checkbox" class="attendance-check" data-index="${index}" data-field="present" ${record.present ? 'checked' : ''}><span class="slider"></span></label></td>
-                <td><div class="attendance-cell-content"><label class="switch"><input type="checkbox" class="attendance-check" data-index="${index}" data-field="lesson" ${record.lesson ? 'checked' : ''} ${!record.present ? 'disabled' : ''}><span class="slider"></span></label><span class="quantity-info" data-action="edit-quantity" data-index="${index}" data-field="lessonQuantity">${record.lessonQuantity || 'مقدار'}</span></div></td>
-                <td><div class="attendance-cell-content"><label class="switch"><input type="checkbox" class="attendance-check" data-index="${index}" data-field="homework" ${record.homework ? 'checked' : ''} ${!record.present ? 'disabled' : ''}><span class="slider"></span></label><span class="quantity-info" data-action="edit-quantity" data-index="${index}" data-field="homeworkQuantity">${record.homeworkQuantity || 'مقدار'}</span></div></td>
-                <td><div class="attendance-cell-content"><label class="switch"><input type="checkbox" class="attendance-check" data-index="${index}" data-field="milestone" ${record.milestone ? 'checked' : ''} ${!record.present ? 'disabled' : ''}><span class="slider"></span></label><span class="quantity-info" data-action="edit-quantity" data-index="${index}" data-field="milestoneQuantity">${record.milestoneQuantity || 'مقدار'}</span></div></td>
+                <td><div class="attendance-cell-content"><label class="round-checkbox"><input type="checkbox" class="attendance-check" data-index="${index}" data-field="present" ${record.present ? 'checked' : ''}><span class="checkmark"></span></label></div></td>
+                <td><div class="attendance-cell-content"><label class="round-checkbox"><input type="checkbox" class="attendance-check" data-index="${index}" data-field="lesson" ${record.lesson ? 'checked' : ''} ${!record.present ? 'disabled' : ''}><span class="checkmark"></span></label><span class="quantity-info" data-action="edit-quantity" data-index="${index}" data-field="lessonQuantity">${record.lessonQuantity || 'مقدار'}</span></div></td>
+                <td><div class="attendance-cell-content"><label class="round-checkbox"><input type="checkbox" class="attendance-check" data-index="${index}" data-field="homework" ${record.homework ? 'checked' : ''} ${!record.present ? 'disabled' : ''}><span class="checkmark"></span></label><span class="quantity-info" data-action="edit-quantity" data-index="${index}" data-field="homeworkQuantity">${record.homeworkQuantity || 'مقدار'}</span></div></td>
+                <td><div class="attendance-cell-content"><label class="round-checkbox"><input type="checkbox" class="attendance-check" data-index="${index}" data-field="milestone" ${record.milestone ? 'checked' : ''} ${!record.present ? 'disabled' : ''}><span class="checkmark"></span></label><span class="quantity-info" data-action="edit-quantity" data-index="${index}" data-field="milestoneQuantity">${record.milestoneQuantity || 'مقدار'}</span></div></td>
                 <td><div class="weekly-graph">${graphHTML}</div></td>`;
             attendanceTableBody.appendChild(row);
         });
@@ -709,6 +744,8 @@ window.addEventListener('DOMContentLoaded', () => {
                     if (confirm(`کیا آپ واقعی طالب علم "${studentToDelete}" کو حذف کرنا چاہتے ہیں؟`)) {
                         students.splice(index, 1);
                         delete attendanceData.studentDetails[studentToDelete];
+                        const watchlistIdx = attendanceData.watchlist.indexOf(studentToDelete);
+                        if(watchlistIdx > -1) attendanceData.watchlist.splice(watchlistIdx, 1);
                         Object.values(attendanceData.sections[section].attendance).forEach(day => { if(day.length > index) day.splice(index, 1) });
                         saveData(); initApp();
                     }
@@ -753,6 +790,10 @@ window.addEventListener('DOMContentLoaded', () => {
             if (attendanceData.studentDetails[oldName]) {
                 attendanceData.studentDetails[newName] = attendanceData.studentDetails[oldName];
                 if (oldName !== newName) delete attendanceData.studentDetails[oldName];
+            }
+            if(attendanceData.watchlist.includes(oldName)){
+                const idx = attendanceData.watchlist.indexOf(oldName);
+                attendanceData.watchlist[idx] = newName;
             }
             saveData(); initApp(); closeModal('name-modal');
         });
