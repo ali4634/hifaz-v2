@@ -1,23 +1,21 @@
-{
-  "name": "حفظ ٹریکر",
-  "short_name": "حفظ ٹریکر",
-  "description": "طلباء کی حاضری اور سبق کی کارکردگی کو ٹریک کرنے کے لیے ایک جامع رجسٹر۔",
-  "start_url": ".",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#3498db",
-  "orientation": "portrait-primary",
-  "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any "
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+ {
+    "name": "Hifaz Tracker",
+    "short_name": "Hifaz",
+    "start_url": "/hifaz-v2/index.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#000000",
+    "scope": "/hifaz-v2/",
+    "icons": [
+        {
+            "src": "/hifaz-v2/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/hifaz-v2/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
 }
