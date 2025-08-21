@@ -15,8 +15,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script src="capacitor.js"></script>
-
     <style>
         :root {
             --primary-color: #3498db; --secondary-color: #2980b9; --success-color: #27ae60;
@@ -49,8 +47,6 @@
         .dark-theme #reminder-message { background-color: #2c3e50; border-right-color: var(--warning-color); }
         .dark-theme #reminder-message h5 { border-bottom-color: #555; }
         .dark-theme .small-btn { background-color: #555; }
-        #student-report-content.pdf-view-mode { background-color: #ffffff !important; color: #121212 !important; }
-        #student-report-content.pdf-view-mode table, #student-report-content.pdf-view-mode td, #student-report-content.pdf-view-mode th { color: #121212 !important; border-color: #ccc !important; }
 
         /* تھیم ٹوگل بٹن */
         #theme-toggle { position: absolute; top: 15px; left: 15px; background: none; border: 1px solid #ccc; color: #888; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2em; display: flex; align-items: center; justify-content: center; z-index: 10; }
@@ -87,34 +83,25 @@
         .save-btn-full { width: 100%; padding: 12px; font-size: 1.1em; margin-top: 15px; background-color: var(--success-color); color: white; border: none; border-radius: var(--border-radius); cursor: pointer;}
         .management-section { margin: 15px 0; padding: 12px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 1px solid #ddd; }
         .small-btn { padding: 5px 8px; margin: 2px; font-size: 0.8em; border: none; border-radius: var(--border-radius); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; background-color: var(--secondary-color); color:white; }
-        
         .attendance-check { transform: scale(1.5); cursor: pointer; }
         .dark-theme .attendance-check { accent-color: var(--primary-color); }
-        
         .watchlist-star { color: #ccc; cursor: pointer; font-size: 1.2em; transition: color 0.3s; vertical-align: middle; }
         .watchlist-star.active { color: var(--warning-color); }
         .attendance-controls { display: flex; gap: 10px; margin-top: 15px; align-items: center; }
         .watchlist-toggle-container { display: flex; align-items: center; gap: 5px; }
-
-        .quantity-module .input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         #quantity-quick-btns { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
         .quick-btn { background-color: #f1f1f1; padding: 10px; border: 1px solid #e0e0e0; border-radius: var(--border-radius); cursor: pointer; user-select: none; text-align: center; transition: background-color 0.2s; }
         .quick-btn:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
-
         #reminder-message { padding: 10px; margin-bottom: 15px; background-color: #fff3e0; border-right: 4px solid var(--warning-color); font-size: 0.9em; border-radius: var(--border-radius); }
-        
         .warning-icon { margin-left: 4px; animation: blink 1.5s infinite; }
         .warning-icon.fa-exclamation-triangle { color: var(--warning-color); }
         .warning-icon.fa-redo { color: var(--danger-color); }
         @keyframes blink { 50% { opacity: 0.5; } }
-        
-        .student-details-form .input-row { display: flex; gap: 10px; align-items: center; }
-        .student-details-form .radio-group { display: flex; gap: 15px; }
-        .student-details-form .radio-group label { display: flex; align-items: center; gap: 5px; }
-        
+        .input-row { display: flex; gap: 10px; align-items: center; }
+        .radio-group { display: flex; gap: 15px; }
+        .radio-group label { display: flex; align-items: center; gap: 5px; }
         .month-selector { display: flex; gap: 10px; align-items: center; justify-content: center; margin-bottom: 10px; }
         .share-buttons { display: flex; gap: 12px; margin-top: 15px; justify-content: center; }
-
         .status-indicator { padding: 4px 10px; border-radius: 15px; color: white; font-weight: bold; font-size: 0.8em; text-align: center; }
         .status-success { background-color: var(--success-color); }
         .status-warning { background-color: var(--warning-color); color: #333; }
@@ -185,7 +172,7 @@
             <span class="close" data-action="close-modal">×</span>
             <h2 id="student-modal-title">طالب علم کی تفصیلات</h2>
             <div class="input-group"><label>نام:</label><input type="text" id="student-form-name"></div>
-            <div class="input-group"><label>فون نمبر:</label><input type="tel" id="student-form-phone"></div><hr>
+            <div class="input-group"><label>فون نمبر (مثال: 923123456789):</label><input type="tel" id="student-form-phone" placeholder="923123456789"></div><hr>
             <h4>منزل کا ہدف</h4>
             <div class="input-row"><div class="input-group" style="flex:1;"><label>ابتدائی پارہ:</label><input type="number" id="student-form-milestone-start" min="1" max="30"></div><div class="input-group" style="flex:1;"><label>آخری پارہ:</label><input type="number" id="student-form-milestone-end" min="1" max="30"></div></div>
             <div class="input-group radio-group"><label><input type="radio" name="milestoneOrder" value="straight" checked> سیدھی ترتیب</label><label><input type="radio" name="milestoneOrder" value="reverse"> الٹی ترتیب</label></div><hr>
@@ -200,7 +187,7 @@
             <span class="close" data-action="close-modal">×</span>
             <div class="month-selector"><button id="prev-month-btn" class="small-btn" data-action="prev-month">گزشتہ ماہ</button><h3 id="student-report-title" style="margin:0;"></h3><button id="next-month-btn" class="small-btn" data-action="next-month">اگلا ماہ</button></div>
             <div id="student-report-content" style="max-height: 50vh; overflow-y: auto; margin-top:15px;"></div>
-            <div class="share-buttons"><button data-action="share-whatsapp" class="save-btn-full" style="background-color: #25D366;">واٹس ایپ</button><button data-action="share-pdf" class="save-btn-full" style="background-color: #e74c3c;">PDF</button></div>
+            <div class="share-buttons"><button data-action="share-whatsapp" class="save-btn-full" style="background-color: #25D366;">رپورٹ شیئر کریں</button><button data-action="share-pdf" class="save-btn-full" style="background-color: #e74c3c;">PDF بنائیں</button></div>
         </div>
     </div>
     
@@ -208,13 +195,19 @@
 
 <script>
 'use strict';
-if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js').then(reg => console.log('SW registered.')).catch(err => console.log(`SW Error: ${err}`)); }); }
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+            .then(reg => console.log('SW registered.'))
+            .catch(err => console.log(`SW Error: ${err}`));
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     
     let currentDate = new Date();
     let attendanceData = {};
-    const DATA_KEY = 'attendanceData_v36_final_status';
+    const DATA_KEY = 'attendanceData_v38_final';
     let currentModalInfo = {};
     let wakeLock = null;
     let progressChart = null;
@@ -227,69 +220,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const applyTheme = (theme) => { document.body.classList.toggle('dark-theme', theme === 'dark'); themeToggle.innerHTML = theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>'; };
     const manageWakeLock = async () => { const el = document.getElementById('wake-lock-toggle'); if (!('wakeLock' in navigator)) { if(el)el.disabled = true; return; } try { if (attendanceData.settings.wakeLock && document.visibilityState === 'visible') { if (wakeLock === null) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } else if (wakeLock !== null) { await wakeLock.release(); } } catch (err) { if (wakeLock) await wakeLock.release(); wakeLock = null; } };
     const saveData = () => { try { localStorage.setItem(DATA_KEY, JSON.stringify(attendanceData)); } catch (e) { showToast('ڈیٹا محفوظ کرنے میں خرابی'); } };
-    const loadData = () => { const d = localStorage.getItem(DATA_KEY); attendanceData={sections:{section1:{students:[],attendance:{}}},studentDetails:{},watchlist:[],settings:{},...JSON.parse(d||'{}')}; ['section1','section2','section3'].forEach(s=>{attendanceData.sections[s]=attendanceData.sections[s]||{students:[],attendance:{}};}); sectionSelector.value=localStorage.getItem('lastSection_v36')||'section1'; applyTheme(attendanceData.settings.theme); const wakeLockToggle = document.getElementById('wake-lock-toggle'); if(wakeLockToggle){wakeLockToggle.checked=!!attendanceData.settings.wakeLock; manageWakeLock();} };
+    const loadData = () => { const d = localStorage.getItem(DATA_KEY); attendanceData={sections:{section1:{students:[],attendance:{}}},studentDetails:{},watchlist:[],settings:{},...JSON.parse(d||'{}')}; ['section1','section2','section3'].forEach(s=>{attendanceData.sections[s]=attendanceData.sections[s]||{students:[],attendance:{}};}); sectionSelector.value=localStorage.getItem('lastSection_v38')||'section1'; applyTheme(attendanceData.settings.theme); const wakeLockToggle = document.getElementById('wake-lock-toggle'); if(wakeLockToggle){wakeLockToggle.checked=!!attendanceData.settings.wakeLock; manageWakeLock();} };
     const updateDateDisplay = () => { document.getElementById('date-picker').valueAsDate = currentDate; document.getElementById('current-date').textContent = currentDate.toLocaleDateString('ur-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); };
     const getSortedStudents = (section) => (attendanceData.sections[section]?.students || []).slice().sort((a, b) => a.localeCompare(b, 'ur'));
     const openModal = (modalId) => document.getElementById(modalId)?.classList.add('active');
     const closeModal = (modalId) => document.getElementById(modalId)?.classList.remove('active');
     const formatQuantity = (q) => q || 'مقدار';
     
+    const getLastAttendedRecords = (studentIndex, section, count) => {
+        const attendance = attendanceData.sections[section]?.attendance || {};
+        const allDates = Object.keys(attendance).sort((a, b) => b.localeCompare(a));
+        const records = [];
+        for (const dateStr of allDates) {
+            if (new Date(dateStr) > currentDate) continue;
+            const record = attendance[dateStr]?.[studentIndex];
+            if (record && record.present) { records.push(record); if (records.length === count) break; }
+        }
+        return records;
+    };
     const checkRepetition = (studentIndex, section) => {
-        const checkField = (field) => {
-            const REPETITION_DAYS = 3;
-            let lastVal = null; let count = 0; let attendedDaysChecked = 0;
-            for (let i = 0; i < 7 && attendedDaysChecked < REPETITION_DAYS; i++) {
-                const day = new Date(currentDate); day.setDate(currentDate.getDate() - i);
-                const dayStr = day.toISOString().split('T')[0];
-                const record = attendanceData.sections[section]?.attendance[dayStr]?.[studentIndex];
-                if (record?.present) {
-                    attendedDaysChecked++;
-                    if (!record[field]) return false;
-                    if (lastVal === null) lastVal = record[field];
-                    if (record[field] === lastVal) count++; else return false;
-                }
-            }
-            return count === REPETITION_DAYS;
-        };
+        const checkField = (field) => { const lastThree = getLastAttendedRecords(studentIndex, section, 3); if (lastThree.length < 3) return false; const firstVal = lastThree[0][field]; if (!firstVal) return false; return lastThree.every(rec => rec[field] === firstVal); };
         return { lesson: checkField('lessonQuantity'), homework: checkField('homeworkQuantity'), milestone: checkField('milestoneQuantity') };
     };
-
     const checkInactivity = (studentIndex, section) => {
-        const checkField = (field) => {
-            const INACTIVITY_DAYS = 3;
-            let inactiveCount = 0; let attendedDaysChecked = 0;
-            for (let i = 0; i < 7 && attendedDaysChecked < INACTIVITY_DAYS; i++) {
-                const day = new Date(currentDate); day.setDate(currentDate.getDate() - i);
-                const dayStr = day.toISOString().split('T')[0];
-                const record = attendanceData.sections[section]?.attendance[dayStr]?.[studentIndex];
-                if (record?.present) {
-                    attendedDaysChecked++;
-                    if (!record[field]) inactiveCount++; else return false; 
-                }
-            }
-            return inactiveCount >= INACTIVITY_DAYS;
-        };
+        const checkField = (field) => { const lastThree = getLastAttendedRecords(studentIndex, section, 3); if (lastThree.length < 3) return false; return lastThree.every(rec => !rec[field]); };
         return { lesson: checkField('lessonQuantity'), homework: checkField('homeworkQuantity'), milestone: checkField('milestoneQuantity') };
     };
-
     const getPerformanceStatus = (studentIndex, section) => {
         const todayStr = currentDate.toISOString().split('T')[0];
         const todayRecord = attendanceData.sections[section]?.attendance[todayStr]?.[studentIndex];
         if (!todayRecord || !todayRecord.present) return { text: 'غیر حاضر', className: 'status-absent' };
-        
-        const inactivity = checkInactivity(studentIndex, section);
-        const repetition = checkRepetition(studentIndex, section);
-        if (Object.values(inactivity).some(v => v) || Object.values(repetition).some(v => v)) {
-            return { text: 'کوتاہی', className: 'status-danger' };
-        }
-
-        const yesterday = new Date(currentDate); yesterday.setDate(currentDate.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
-        const yesterdayRecord = attendanceData.sections[section]?.attendance[yesterdayStr]?.[studentIndex];
-        if (yesterdayRecord && yesterdayRecord.present && !yesterdayRecord.lessonQuantity) {
-            return { text: 'سست روی', className: 'status-warning' };
-        }
-        
+        const inactivity = checkInactivity(studentIndex, section); const repetition = checkRepetition(studentIndex, section);
+        if (Object.values(inactivity).some(v => v) || Object.values(repetition).some(v => v)) return { text: 'کوتاہی', className: 'status-danger' };
+        const lastTwo = getLastAttendedRecords(studentIndex, section, 2);
+        if (lastTwo.length > 0 && lastTwo[0] && !lastTwo[0].lessonQuantity && !lastTwo[0].homeworkQuantity && !lastTwo[0].milestoneQuantity) return { text: 'سست روی', className: 'status-warning' };
         return { text: 'مستقل', className: 'status-success' };
     };
 
@@ -306,29 +270,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const repetition = checkRepetition(studentIndex, section);
             const inactivity = checkInactivity(studentIndex, section);
             const status = getPerformanceStatus(studentIndex, section);
-
             const row = document.createElement('tr');
             row.className = record.present ? 'present-row' : 'absent-row';
+            const lessonWarn = `${inactivity.lesson ? `<i class="fas fa-exclamation-triangle warning-icon" title="سبق نہیں سنا رہا"></i>` : ''}${repetition.lesson ? `<i class="fas fa-redo warning-icon" title="وہی سبق دہرا رہا ہے"></i>` : ''}`;
+            const homeworkWarn = `${inactivity.homework ? `<i class="fas fa-exclamation-triangle warning-icon" title="سبقی نہیں سنا رہا"></i>` : ''}${repetition.homework ? `<i class="fas fa-redo warning-icon" title="وہی سبقی دہرا رہا ہے"></i>` : ''}`;
+            const milestoneWarn = `${inactivity.milestone ? `<i class="fas fa-exclamation-triangle warning-icon" title="منزل نہیں سنا رہا"></i>` : ''}${repetition.milestone ? `<i class="fas fa-redo warning-icon" title="وہی منزل دہرا رہا ہے"></i>` : ''}`;
             
-            const lessonWarnings = `${inactivity.lesson ? `<i class="fas fa-exclamation-triangle warning-icon" title="طالب علم 3 دن سے سبق نہیں سنا رہا"></i>` : ''}${repetition.lesson ? `<i class="fas fa-redo warning-icon" title="طالب علم 3 دن سے ایک ہی سبق دہرا رہا ہے"></i>` : ''}`;
-            const homeworkWarnings = `${inactivity.homework ? `<i class="fas fa-exclamation-triangle warning-icon" title="طالب علم 3 دن سے سبقی نہیں سنا رہا"></i>` : ''}${repetition.homework ? `<i class="fas fa-redo warning-icon" title="طالب علم 3 دن سے ایک ہی سبقی دہرا رہا ہے"></i>` : ''}`;
-            const milestoneWarnings = `${inactivity.milestone ? `<i class="fas fa-exclamation-triangle warning-icon" title="طالب علم 3 دن سے منزل نہیں سنا رہا"></i>` : ''}${repetition.milestone ? `<i class="fas fa-redo warning-icon" title="طالب علم 3 دن سے ایک ہی منزل دہرا رہا ہے"></i>` : ''}`;
-
             row.innerHTML = `
             <td>
                 <div class="student-name-container">
                     <i class="fas fa-star watchlist-star ${attendanceData.watchlist.includes(studentName)?'active':''}" data-action="toggle-watchlist" data-student-name="${studentName}"></i>
                     <span class="student-name" data-action="show-report" data-student-name="${studentName}">${studentName}</span>
-                    <i class="fas fa-edit" data-action="edit-student" data-student-name="${studentName}" title="تفصیلات میں ترمیم" style="cursor: pointer; color: var(--secondary-color);"></i>
+                    <i class="fas fa-edit" data-action="edit-student" data-student-name="${studentName}" title="ترمیم" style="cursor:pointer; color:var(--secondary-color);"></i>
+                    <i class="fab fa-whatsapp" data-action="message-student" data-student-name="${studentName}" title="واٹس ایپ میسج" style="cursor:pointer; color:#25D366; font-size:1.1em;"></i>
                 </div>
             </td>
-            <td style="text-align:center;"><input type="checkbox" class="attendance-check" data-student-name="${studentName}" ${record.present?'checked':''}></td>
-            <td><div class="attendance-cell-content"><div style="display: flex; align-items: center;">${lessonWarnings}<input type="checkbox" class="attendance-check" data-student-name="${studentName}" data-task="lesson" ${record.lessonQuantity?'checked':''} ${!record.present?'disabled':''}></div>
-                <span class="quantity-info" data-action="edit-quantity" data-student-name="${studentName}" data-field="lessonQuantity">${formatQuantity(record.lessonQuantity)}</span></div></td>
-            <td><div class="attendance-cell-content"><div style="display: flex; align-items: center;">${homeworkWarnings}<input type="checkbox" class="attendance-check" data-student-name="${studentName}" data-task="homework" ${record.homeworkQuantity?'checked':''} ${!record.present?'disabled':''}></div>
-                <span class="quantity-info" data-action="edit-quantity" data-student-name="${studentName}" data-field="homeworkQuantity">${formatQuantity(record.homeworkQuantity)}</span></div></td>
-            <td><div class="attendance-cell-content"><div style="display: flex; align-items: center;">${milestoneWarnings}<input type="checkbox" class="attendance-check" data-student-name="${studentName}" data-task="milestone" ${record.milestoneQuantity?'checked':''} ${!record.present?'disabled':''}></div>
-                <span class="quantity-info" data-action="edit-quantity" data-student-name="${studentName}" data-field="milestoneQuantity">${formatQuantity(record.milestoneQuantity)}</span></div></td>
+            <td><input type="checkbox" class="attendance-check" data-student-name="${studentName}" ${record.present?'checked':''}></td>
+            <td><div class="attendance-cell-content"><div>${lessonWarn}<input type="checkbox" class="attendance-check" data-student-name="${studentName}" data-task="lesson" ${record.lessonQuantity?'checked':''} ${!record.present?'disabled':''}></div><span class="quantity-info" data-action="edit-quantity" data-student-name="${studentName}" data-field="lessonQuantity">${formatQuantity(record.lessonQuantity)}</span></div></td>
+            <td><div class="attendance-cell-content"><div>${homeworkWarn}<input type="checkbox" class="attendance-check" data-student-name="${studentName}" data-task="homework" ${record.homeworkQuantity?'checked':''} ${!record.present?'disabled':''}></div><span class="quantity-info" data-action="edit-quantity" data-student-name="${studentName}" data-field="homeworkQuantity">${formatQuantity(record.homeworkQuantity)}</span></div></td>
+            <td><div class="attendance-cell-content"><div>${milestoneWarn}<input type="checkbox" class="attendance-check" data-student-name="${studentName}" data-task="milestone" ${record.milestoneQuantity?'checked':''} ${!record.present?'disabled':''}></div><span class="quantity-info" data-action="edit-quantity" data-student-name="${studentName}" data-field="milestoneQuantity">${formatQuantity(record.milestoneQuantity)}</span></div></td>
             <td><div class="status-indicator ${status.className}">${status.text}</div></td>`;
             attendanceTableBody.appendChild(row);
         });
@@ -350,28 +310,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('daily-stats-container');
         const section = sectionSelector.value;
         const students = attendanceData.sections[section].students;
-        const dateStr = currentDate.toISOString().split('T')[0];
-        const records = attendanceData.sections[section].attendance[dateStr] || [];
+        const records = attendanceData.sections[section].attendance[currentDate.toISOString().split('T')[0]] || [];
         let presentCount = 0, absent = [], lesson = [], homework = [], milestone = [], problemStudents = new Set();
         students.forEach((name, index) => {
             if (records[index]?.present) presentCount++; else absent.push(name);
             if(records[index]?.lessonQuantity) lesson.push(`${name} (${records[index].lessonQuantity})`);
             if(records[index]?.homeworkQuantity) homework.push(`${name} (${records[index].homeworkQuantity})`);
             if(records[index]?.milestoneQuantity) milestone.push(`${name} (${records[index].milestoneQuantity})`);
-            
             const status = getPerformanceStatus(index, section);
-            if (status.className === 'status-danger' || status.className === 'status-warning') {
-                problemStudents.add(name);
-            }
+            if (status.className === 'status-danger' || status.className === 'status-warning') problemStudents.add(name);
         });
         const createCard = (title, count, names, color) => `<div class="management-section" style="border-right: 4px solid ${color};"><h4>${title}: ${count}</h4>${names.length > 0 ? `<p>${names.join(', ')}</p>` : ''}</div>`;
-        container.innerHTML = createCard('حاضر', presentCount, [], 'var(--success-color)') 
-            + createCard('غیر حاضر', absent.length, absent, 'var(--danger-color)') 
-            + createCard('سبق سنانے والے', lesson.length, lesson, 'var(--primary-color)') 
-            + createCard('سبقی سنانے والے', homework.length, homework, 'var(--primary-color)') 
-            + createCard('منزل سنانے والے', milestone.length, milestone, 'var(--primary-color)') 
-            + createCard('خاص توجہ کے لائق طلباء', attendanceData.watchlist.length, attendanceData.watchlist, 'var(--warning-color)')
-            + createCard('گڑبڑ کرنے والے طلباء', problemStudents.size, [...problemStudents], 'var(--danger-color)');
+        container.innerHTML = createCard('حاضر', presentCount, [], 'var(--success-color)') + createCard('غیر حاضر', absent.length, absent, 'var(--danger-color)') + createCard('سبق سنانے والے', lesson.length, lesson, 'var(--primary-color)') + createCard('سبقی سنانے والے', homework.length, homework, 'var(--primary-color)') + createCard('منزل سنانے والے', milestone.length, milestone, 'var(--primary-color)') + createCard('خاص توجہ کے لائق طلباء', attendanceData.watchlist.length, attendanceData.watchlist, 'var(--warning-color)') + createCard('غافل طلباء', problemStudents.size, [...problemStudents], 'var(--danger-color)');
     };
     
     const initAppForDate = () => {
@@ -384,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     const initApp = () => { initAppForDate(); updateDateDisplay(); renderAttendanceTable(); };
-    
+
     const applyFilters = () => {
         const searchTerm = document.getElementById('search-attendance').value.trim().toLowerCase();
         const showWatchedOnly = document.getElementById('watchlist-toggle').checked;
@@ -401,259 +351,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     
-    (function setupListeners() {
-        themeToggle.addEventListener('click', () => { const newTheme=document.body.classList.contains('dark-theme')?'light':'dark'; attendanceData.settings.theme=newTheme; applyTheme(newTheme); saveData(); });
-        const wakeLockToggleEl = document.getElementById('wake-lock-toggle');
-        if(wakeLockToggleEl) wakeLockToggleEl.addEventListener('change', (e) => { attendanceData.settings.wakeLock = e.target.checked; manageWakeLock(); saveData(); });
-        document.addEventListener('visibilitychange', manageWakeLock);
-        document.getElementById('search-attendance').addEventListener('input', applyFilters);
-        document.getElementById('watchlist-toggle').addEventListener('change', applyFilters);
-        document.getElementById('date-picker').addEventListener('change', (e) => { currentDate = e.target.valueAsDate ? new Date(e.target.valueAsDate.valueOf() + e.target.valueAsDate.getTimezoneOffset() * 60000) : new Date(); initApp(); });
-        sectionSelector.addEventListener('change', () => { localStorage.setItem('lastSection_v36', sectionSelector.value); initApp(); });
-        
-        document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', function(e) {
-            document.querySelector('.tab.active')?.classList.remove('active'); e.currentTarget.classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(e.currentTarget.dataset.tab + '-tab').classList.add('active');
-            if (e.currentTarget.dataset.tab === 'students') renderStudentManagement();
-            if (e.currentTarget.dataset.tab === 'stats') renderDailyStats();
-            if (e.currentTarget.dataset.tab === 'performance') renderPerformanceTab();
-        }));
-        
-        attendanceTableBody.addEventListener('change', (e) => {
-            if (e.target.classList.contains('attendance-check')) {
-                const studentName = e.target.dataset.studentName;
-                const task = e.target.dataset.task;
-                const section = sectionSelector.value;
-                const studentIndex = attendanceData.sections[section].students.indexOf(studentName);
-                if (studentIndex === -1) return;
-                const dateStr = currentDate.toISOString().split('T')[0];
-                const record = attendanceData.sections[section].attendance[dateStr][studentIndex];
-                
-                if (task) {
-                    if (e.target.checked) {
-                        if (!record[task + 'Quantity']) {
-                             const field = task + 'Quantity';
-                             currentModalInfo = { studentName, field };
-                             document.getElementById('quantity-title').textContent = `${studentName} - ${field.replace('Quantity','')}`;
-                             renderQuantityModule(studentName, field, record);
-                             openModal('quantity-modal');
-                        }
-                    } else {
-                        record[task + 'Quantity'] = '';
-                    }
-                } else { 
-                    record.present = e.target.checked;
-                    if(!e.target.checked) {
-                        record.lessonQuantity = ''; record.homeworkQuantity = ''; record.milestoneQuantity = '';
-                    }
-                }
-                saveData(); renderAttendanceTable();
-            }
-        });
-        
-        document.body.addEventListener('click', (e) => {
-            const target = e.target.closest('[data-action]'); if (!target) return;
-            const { action, studentName, field } = target.dataset;
-            const section = sectionSelector.value;
-            const studentIndex = studentName ? attendanceData.sections[section].students.indexOf(studentName) : -1;
-            const dateStr = currentDate.toISOString().split('T')[0];
-
-            switch(action) {
-                case 'toggle-watchlist': const wIndex = attendanceData.watchlist.indexOf(studentName); if (wIndex > -1) attendanceData.watchlist.splice(wIndex, 1); else attendanceData.watchlist.push(studentName); saveData(); renderAttendanceTable(); renderDailyStats(); break;
-                case 'edit-quantity':
-                    if (studentIndex === -1) return;
-                    const record = attendanceData.sections[section].attendance[dateStr]?.[studentIndex];
-                    if (!record || !record.present) { showToast('پہلے حاضری لگائیں۔'); return; }
-                    currentModalInfo = { studentName, field };
-                    document.getElementById('quantity-title').textContent = `${studentName} - ${field.replace('Quantity','')}`;
-                    renderQuantityModule(studentName, field, record);
-                    openModal('quantity-modal');
-                    break;
-                case 'add-student':
-                    currentModalInfo = { isNew: true };
-                    document.getElementById('student-modal-title').textContent = 'نیا طالب علم شامل کریں';
-                    document.getElementById('student-form-name').value = ''; document.getElementById('student-form-phone').value = '';
-                    document.getElementById('student-form-milestone-start').value = 1; document.getElementById('student-form-milestone-end').value = 30;
-                    document.querySelector('input[name="milestoneOrder"][value="straight"]').checked = true;
-                    document.getElementById('student-form-homework-para').value = ''; document.getElementById('student-form-homework-total').value = '';
-                    openModal('student-details-modal');
-                    break;
-                case 'edit-student':
-                    currentModalInfo = { isNew: false, oldName: studentName };
-                    const details = attendanceData.studentDetails[studentName] || {};
-                    document.getElementById('student-modal-title').textContent = `ترمیم: ${studentName}`;
-                    document.getElementById('student-form-name').value = studentName;
-                    document.getElementById('student-form-phone').value = details.phone || '';
-                    document.getElementById('student-form-milestone-start').value = details.milestoneStart || 1;
-                    document.getElementById('student-form-milestone-end').value = details.milestoneEnd || 30;
-                    document.querySelector(`input[name="milestoneOrder"][value="${details.milestoneOrder || 'straight'}"]`).checked = true;
-                    document.getElementById('student-form-homework-para').value = details.homeworkPara || '';
-                    document.getElementById('student-form-homework-total').value = details.homeworkTotal || '';
-                    openModal('student-details-modal');
-                    break;
-                case 'delete-student':
-                    if (confirm(`کیا آپ واقعی طالب علم "${studentName}" کو حذف کرنا چاہتے ہیں؟`)) {
-                        if(studentIndex > -1) {
-                            attendanceData.sections[section].students.splice(studentIndex, 1);
-                            Object.values(attendanceData.sections[section].attendance).forEach(day => { if(day.length > studentIndex) day.splice(studentIndex, 1); });
-                            delete attendanceData.studentDetails[studentName];
-                            const wIndex = attendanceData.watchlist.indexOf(studentName); if(wIndex > -1) attendanceData.watchlist.splice(wIndex, 1);
-                            saveData(); renderStudentManagement(); renderAttendanceTable();
-                        }
-                    }
-                    break;
-                case 'save-quantity':
-                    const { studentName: sName, field: f } = currentModalInfo;
-                    const sIndex = attendanceData.sections[section].students.indexOf(sName);
-                    if(sIndex === -1) return;
-                    const value = document.getElementById('quantity-input-text').value.trim();
-                    const d = currentDate.toISOString().split('T')[0];
-                    const rec = attendanceData.sections[section].attendance[d][sIndex];
-                    rec[f] = value;
-                    saveData(); renderAttendanceTable(); closeModal('quantity-modal');
-                    break;
-                case 'save-student-details':
-                    const newName = document.getElementById('student-form-name').value.trim();
-                    if(!newName) { showToast('طالب علم کا نام لازمی ہے۔'); return; }
-                    const students = attendanceData.sections[section].students;
-                    if(currentModalInfo.isNew) { if(students.includes(newName)) { showToast('اس نام کا طالب علم پہلے سے موجود ہے۔'); return; } students.push(newName); } 
-                    else if (newName !== currentModalInfo.oldName) {
-                        const oldIndex = students.indexOf(currentModalInfo.oldName);
-                        if(oldIndex > -1) students[oldIndex] = newName;
-                        if(attendanceData.studentDetails[currentModalInfo.oldName]) { attendanceData.studentDetails[newName] = attendanceData.studentDetails[currentModalInfo.oldName]; delete attendanceData.studentDetails[currentModalInfo.oldName]; }
-                        const wIndex = attendanceData.watchlist.indexOf(currentModalInfo.oldName); if(wIndex > -1) attendanceData.watchlist[wIndex] = newName;
-                    }
-                    attendanceData.studentDetails[newName] = { phone: document.getElementById('student-form-phone').value, milestoneStart: parseInt(document.getElementById('student-form-milestone-start').value) || 1, milestoneEnd: parseInt(document.getElementById('student-form-milestone-end').value) || 30, milestoneOrder: document.querySelector('input[name="milestoneOrder"]:checked').value, homeworkPara: parseInt(document.getElementById('student-form-homework-para').value) || null, homeworkTotal: parseInt(document.getElementById('student-form-homework-total').value) || null };
-                    saveData(); renderStudentManagement(); renderAttendanceTable(); closeModal('student-details-modal');
-                    break;
-                case 'restore': document.getElementById('restore-file-input').click(); break;
-                case 'backup':
-                    try {
-                        const dataStr = JSON.stringify(attendanceData, null, 2);
-                        const blob = new Blob([dataStr], {type: "application/json"});
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `hifz_tracker_backup_${new Date().toISOString().split('T')[0]}.json`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                        showToast('بیک اپ کامیابی سے ڈاؤن لوڈ ہو گیا');
-                    } catch(e) {
-                        showToast('بیک اپ بنانے میں خرابی');
-                    }
-                    break;
-                case 'close-modal': closeModal(target.closest('.modal').id); break;
-                case 'show-report': renderAndShowStudentReport(studentName, new Date()); break;
-                case 'prev-month': currentModalInfo.reportDate.setMonth(currentModalInfo.reportDate.getMonth() - 1); renderAndShowStudentReport(currentModalInfo.studentName, currentModalInfo.reportDate); break;
-                case 'next-month': currentModalInfo.reportDate.setMonth(currentModalInfo.reportDate.getMonth() + 1); renderAndShowStudentReport(currentModalInfo.studentName, currentModalInfo.reportDate); break;
-                case 'share-whatsapp':
-                    const reportTitleText = document.getElementById('student-report-title')?.textContent;
-                    const reportTable = document.getElementById('student-report-content')?.querySelector('table');
-                    if (reportTitleText && reportTable) {
-                        let message = `*${reportTitleText}*\n\n`;
-                        const rows = reportTable.querySelectorAll('tr');
-                        rows.forEach((row, index) => {
-                            const cells = row.querySelectorAll('th, td');
-                            if (cells.length > 0) {
-                                const rowText = Array.from(cells).map(cell => cell.textContent.trim()).join(' | ');
-                                message += rowText + '\n';
-                                if (index === 0) message += '--------------------\n';
-                            }
-                        });
-                        message += `\n- Hifaz Tracker App`;
-                        const encodedMessage = encodeURIComponent(message);
-                        window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
-                    } else {
-                        showToast('شیئر کرنے کے لیے کوئی مواد نہیں ہے۔');
-                    }
-                    break;
-                case 'share-pdf':
-                    const reportContentEl = document.getElementById('student-report-content');
-                    const reportTitleEl = document.getElementById('student-report-title');
-                    if (reportContentEl && reportTitleEl) {
-                        showToast('پی ڈی ایف بن رہا ہے، براہ کرم انتظار کریں...');
-                        const studentName = currentModalInfo.studentName;
-                        reportContentEl.classList.add('pdf-view-mode');
-                        const originalMaxHeight = reportContentEl.style.maxHeight;
-                        reportContentEl.style.maxHeight = 'none';
-
-                        html2canvas(reportContentEl, { scale: 2, useCORS: true }).then(canvas => {
-                            reportContentEl.classList.remove('pdf-view-mode');
-                            reportContentEl.style.maxHeight = originalMaxHeight;
-
-                            const imgData = canvas.toDataURL('image/png');
-                            const { jsPDF } = window.jspdf;
-                            const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-                            
-                            const pdfWidth = pdf.internal.pageSize.getWidth();
-                            const pdfHeight = pdf.internal.pageSize.getHeight();
-                            const canvasAspectRatio = canvas.width / canvas.height;
-                            let imgWidth = pdfWidth - 20;
-                            let imgHeight = imgWidth / canvasAspectRatio;
-
-                            if (imgHeight > pdfHeight - 25) {
-                                imgHeight = pdfHeight - 25;
-                                imgWidth = imgHeight * canvasAspectRatio;
-                            }
-                            
-                            pdf.text(reportTitleEl.textContent, pdfWidth / 2, 10, { align: 'center' });
-                            pdf.addImage(imgData, 'PNG', (pdfWidth - imgWidth) / 2, 15, imgWidth, imgHeight);
-                            pdf.save(`${studentName}_report.pdf`);
-                        }).catch(err => {
-                            showToast('PDF بنانے میں خرابی۔');
-                            reportContentEl.classList.remove('pdf-view-mode');
-                            reportContentEl.style.maxHeight = originalMaxHeight;
-                        });
-                    }
-                    break;
-            }
-        });
-        
-        document.getElementById('restore-file-input').addEventListener('change', (event) => {
-            const file = event.target.files[0]; if (!file) return;
-            if (!confirm('کیا آپ واقعی بیک اپ بحال کرنا چاہتے ہیں؟')) { event.target.value = null; return; }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const restoredData = JSON.parse(e.target.result);
-                    if (restoredData && restoredData.sections) {
-                        localStorage.setItem(DATA_KEY, JSON.stringify(restoredData));
-                        loadData(); initApp(); showToast('بیک اپ کامیابی سے بحال ہو گیا ہے۔');
-                    } else { throw new Error('Invalid file format.'); }
-                } catch (error) { showToast('فائل خراب ہے یا درست فارمیٹ میں نہیں۔'); }
-                event.target.value = null; 
-            };
-            reader.readAsText(file);
-        });
-    })();
-
-    const findLastEntries = (studentIndex) => {
-        const result = {
-            lessonQuantity: { value: null, date: null },
-            homeworkQuantity: { value: null, date: null },
-            milestoneQuantity: { value: null, date: null }
-        };
-        let foundCount = 0;
-        const fields = ['lessonQuantity', 'homeworkQuantity', 'milestoneQuantity'];
-
-        for (let i = 1; i <= 30; i++) { 
+    const findLastEntries = (studentIndex, section) => {
+        const result = { lessonQuantity: { value: null, date: null }, homeworkQuantity: { value: null, date: null }, milestoneQuantity: { value: null, date: null } };
+        const attendance = attendanceData.sections[section]?.attendance || {};
+        const allDates = Object.keys(attendance).sort((a, b) => b.localeCompare(a));
+        let foundCount = 0; const fields = ['lessonQuantity', 'homeworkQuantity', 'milestoneQuantity'];
+        for (const dateStr of allDates) {
             if (foundCount === 3) break;
-            const pastDate = new Date(currentDate);
-            pastDate.setDate(currentDate.getDate() - i);
-            const pastDateStr = pastDate.toISOString().split('T')[0];
-            const pastRecord = attendanceData.sections[sectionSelector.value].attendance[pastDateStr]?.[studentIndex];
-            if (pastRecord) {
-                fields.forEach(field => {
-                    if (result[field].value === null && pastRecord[field]) {
-                        result[field].value = pastRecord[field];
-                        result[field].date = pastDate.toLocaleDateString('ur-PK', {day:'numeric', month:'short'});
-                        foundCount++;
-                    }
-                });
-            }
+            const record = attendance[dateStr]?.[studentIndex];
+            if (record) { fields.forEach(field => { if (result[field].value === null && record[field]) { result[field].value = record[field]; result[field].date = new Date(dateStr).toLocaleDateString('ur-PK', {day:'numeric', month:'short'}); foundCount++; } }); }
         }
         return result;
     };
@@ -663,56 +369,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const value = record[field] || '';
         const reminderMsg = document.getElementById('reminder-message');
         const studentIndex = attendanceData.sections[sectionSelector.value].students.indexOf(studentName);
-        
-        const lastEntries = findLastEntries(studentIndex);
+        const lastEntries = findLastEntries(studentIndex, sectionSelector.value);
         let reminderHTML = '<h5 style="margin: 0 0 8px 0; padding-bottom: 5px; border-bottom: 1px solid #ddd;">گزشتہ اندراجات</h5>';
         let hasAnyReminder = false;
-        
-        const formatReminderLine = (label, entry) => {
-            if (entry.value) {
-                hasAnyReminder = true;
-                return `<p style="margin: 4px 0;"><strong>${label}:</strong> ${entry.value} <span style="font-size: 0.8em; opacity: 0.8;">(${entry.date})</span></p>`;
-            }
-            return '';
-        };
-
-        reminderHTML += formatReminderLine('آخری سبق', lastEntries.lessonQuantity);
-        reminderHTML += formatReminderLine('گزشتہ سبقی', lastEntries.homeworkQuantity);
-        reminderHTML += formatReminderLine('گزشتہ منزل', lastEntries.milestoneQuantity);
-
-        if (hasAnyReminder) {
-            reminderMsg.innerHTML = reminderHTML;
-            reminderMsg.style.display = 'block';
-        } else {
-            reminderMsg.style.display = 'none';
-        }
-        
+        const formatReminderLine = (label, entry) => { if (entry.value) { hasAnyReminder = true; return `<p style="margin: 4px 0;"><strong>${label}:</strong> ${entry.value} <span style="font-size: 0.8em; opacity: 0.8;">(${entry.date})</span></p>`; } return ''; };
+        reminderHTML += formatReminderLine('آخری سبق', lastEntries.lessonQuantity); reminderHTML += formatReminderLine('گزشتہ سبقی', lastEntries.homeworkQuantity); reminderHTML += formatReminderLine('گزشتہ منزل', lastEntries.milestoneQuantity);
+        if (hasAnyReminder) { reminderMsg.innerHTML = reminderHTML; reminderMsg.style.display = 'block'; } else { reminderMsg.style.display = 'none'; }
         let contentHTML = `<div class="input-group"><input type="text" id="quantity-input-text" value="${value}" placeholder="مقدار درج کریں..."></div><div id="quantity-quick-btns">`;
         let paraSelectorHTML = `<select id="para-selector"><option value="">پارہ منتخب کریں</option>${Array.from({length:30},(_,i)=>i+1).map(p=>`<option value="${p}">پارہ ${p}</option>`).join('')}</select>`;
-        
         if (field === 'milestoneQuantity') {
-            contentHTML += `<div class="input-row">${paraSelectorHTML}<input id="line-or-page-input" type="number" placeholder="آیت/صفحہ نمبر" style="width: 100px;"></div>`;
+            contentHTML += `<div class="input-row">${paraSelectorHTML}<input id="line-or-page-input" type="number" placeholder="آیت/صفحہ" style="width: 100px;"></div>`;
             contentHTML += ['ربع 1', 'ربع 2', 'ربع 3', 'ربع 4', 'صفحہ', 'رکوع'].map(q => `<div class="quick-btn">${q}</div>`).join('');
         } else if (field === 'homeworkQuantity') {
             contentHTML += `<div class="input-row">${paraSelectorHTML}<input id="line-or-page-input" type="number" placeholder="صفحہ نمبر" style="width: 100px;"></div>`;
             contentHTML += ['صفحہ', 'رکوع', 'ربع 1', 'ربع 2'].map(q => `<div class="quick-btn">${q}</div>`).join('');
-        } else { // lessonQuantity
+        } else {
             contentHTML += `<div class="input-row">${paraSelectorHTML}<input id="line-or-page-input" type="number" placeholder="لائن نمبر" style="width: 100px;"></div>`;
             contentHTML += ['لائن', 'صفحہ', 'رکوع'].map(q => `<div class="quick-btn">${q}</div>`).join('');
         }
         contentHTML += `</div>`;
         container.innerHTML = contentHTML;
-
-        container.querySelectorAll('.quick-btn').forEach(btn => btn.addEventListener('click', () => {
-            const input = document.getElementById('quantity-input-text');
-            const para = container.querySelector('#para-selector')?.value;
-            const lineOrPage = container.querySelector('#line-or-page-input')?.value;
-            let text = '';
-            if (para) text += `پارہ ${para}, `;
-            if (lineOrPage) text += `${lineOrPage} `;
-            text += btn.textContent;
-            input.value = text.trim();
-        }));
+        container.querySelectorAll('.quick-btn').forEach(btn => btn.addEventListener('click', () => { const input = document.getElementById('quantity-input-text'); const para = container.querySelector('#para-selector')?.value; const lineOrPage = container.querySelector('#line-or-page-input')?.value; let text = para ? `پارہ ${para}, ` : ''; if (lineOrPage) text += `${lineOrPage} `; text += btn.textContent; input.value = text.trim(); }));
     };
     
     const renderPerformanceTab = () => {
@@ -726,9 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!studentName) { if(progressChart) progressChart.destroy(); return; }
             const details = attendanceData.studentDetails[studentName] || {};
             const start = details.milestoneStart || 1; const end = details.milestoneEnd || 30;
-            const totalParas = Math.abs(end - start) + 1;
-            let completedCount = 0; // Placeholder for now
-            const remainingCount = totalParas - completedCount;
+            const totalParas = Math.abs(end - start) + 1; let completedCount = 0; const remainingCount = totalParas - completedCount;
             const ctx = document.getElementById('progress-chart').getContext('2d');
             if(progressChart) progressChart.destroy();
             progressChart = new Chart(ctx, { type: 'pie', data: { labels: ['مکمل شدہ', 'باقی'], datasets: [{ data: [completedCount, remainingCount > 0 ? remainingCount : 0], backgroundColor: [ '#27ae60', '#e74c3c' ] }] }, options: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: `${studentName} کی منزل کی مجموعی ترقی` } } } });
@@ -740,44 +415,168 @@ document.addEventListener('DOMContentLoaded', () => {
         const reportTitle = document.getElementById('student-report-title');
         const reportContent = document.getElementById('student-report-content');
         if (reportTitle) reportTitle.textContent = `${studentName} - ${date.toLocaleDateString('ur-PK', {month:'long', year:'numeric'})}`;
-        
         const section = sectionSelector.value;
-        const month = date.getMonth();
-        const year = date.getFullYear();
         const studentIndex = attendanceData.sections[section].students.indexOf(studentName);
         if(studentIndex === -1) { reportContent.innerHTML = 'طالب علم نہیں ملا۔'; openModal('student-report-modal'); return;}
-        
         const attendance = attendanceData.sections[section].attendance;
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
         let records = [];
         for (let day = 1; day <= daysInMonth; day++) {
-            const dateObj = new Date(year, month, day);
+            const dateObj = new Date(date.getFullYear(), date.getMonth(), day);
             const dateStr = dateObj.toISOString().split('T')[0];
             if (attendance[dateStr] && attendance[dateStr][studentIndex]) {
                 records.push({ date: dateStr, ...attendance[dateStr][studentIndex] });
             }
         }
-        
         if (reportContent) {
             let tableHTML = `<table style="font-size:0.9em;width:100%;"><thead><tr><th>تاریخ</th><th>حاضری</th><th>سبق</th><th>سبقی</th><th>منزل</th></tr></thead><tbody>`;
             if (records.length > 0) {
                 records.forEach(rec => {
-                    tableHTML += `<tr class="${rec.present ? 'present-row' : 'absent-row'}">
-                        <td>${new Date(rec.date).toLocaleDateString('ur-PK', {day:'numeric', month:'short'})}</td>
-                        <td>${rec.present ? 'حاضر' : 'غیرحاضر'}</td>
-                        <td>${rec.present ? (rec.lessonQuantity || '✘') : '-'}</td>
-                        <td>${rec.present ? (rec.homeworkQuantity || '✘') : '-'}</td>
-                        <td>${rec.present ? (rec.milestoneQuantity || '✘') : '-'}</td></tr>`;
+                    tableHTML += `<tr class="${rec.present ? 'present-row' : 'absent-row'}"><td>${new Date(rec.date).toLocaleDateString('ur-PK', {day:'numeric', month:'short'})}</td><td>${rec.present ? 'حاضر' : 'غیرحاضر'}</td><td>${rec.present ? (rec.lessonQuantity || '✘') : '-'}</td><td>${rec.present ? (rec.homeworkQuantity || '✘') : '-'}</td><td>${rec.present ? (rec.milestoneQuantity || '✘') : '-'}</td></tr>`;
                 });
-            } else {
-                tableHTML += `<tr><td colspan="5" style="text-align:center;">اس مہینے کا کوئی ریکارڈ موجود نہیں۔</td></tr>`;
-            }
+            } else { tableHTML += `<tr><td colspan="5" style="text-align:center;">اس مہینے کا کوئی ریکارڈ موجود نہیں۔</td></tr>`; }
             reportContent.innerHTML = tableHTML + '</tbody></table>';
         }
-
         openModal('student-report-modal');
     };
-    
+
+    (function setupListeners() {
+        themeToggle.addEventListener('click', () => { const newTheme=document.body.classList.contains('dark-theme')?'light':'dark'; attendanceData.settings.theme=newTheme; applyTheme(newTheme); saveData(); });
+        const wakeLockToggleEl = document.getElementById('wake-lock-toggle');
+        if(wakeLockToggleEl) wakeLockToggleEl.addEventListener('change', (e) => { attendanceData.settings.wakeLock = e.target.checked; manageWakeLock(); saveData(); });
+        document.addEventListener('visibilitychange', manageWakeLock);
+        document.getElementById('search-attendance').addEventListener('input', applyFilters);
+        document.getElementById('watchlist-toggle').addEventListener('change', applyFilters);
+        document.getElementById('date-picker').addEventListener('change', (e) => { currentDate = e.target.valueAsDate ? new Date(e.target.valueAsDate.valueOf() + e.target.valueAsDate.getTimezoneOffset() * 60000) : new Date(); initApp(); });
+        sectionSelector.addEventListener('change', () => { localStorage.setItem('lastSection_v38', sectionSelector.value); initApp(); });
+        
+        document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', function(e) {
+            document.querySelector('.tab.active')?.classList.remove('active');
+            e.currentTarget.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(e.currentTarget.dataset.tab + '-tab').classList.add('active');
+            if (e.currentTarget.dataset.tab === 'students') renderStudentManagement();
+            if (e.currentTarget.dataset.tab === 'stats') renderDailyStats();
+            if (e.currentTarget.dataset.tab === 'performance') renderPerformanceTab();
+        }));
+        
+        attendanceTableBody.addEventListener('change', (e) => {
+            if (e.target.classList.contains('attendance-check')) {
+                const studentName = e.target.dataset.studentName; const task = e.target.dataset.task;
+                const section = sectionSelector.value; const studentIndex = attendanceData.sections[section].students.indexOf(studentName); if (studentIndex === -1) return;
+                const dateStr = currentDate.toISOString().split('T')[0]; const record = attendanceData.sections[section].attendance[dateStr][studentIndex];
+                if (task) { if (e.target.checked) { if (!record[task + 'Quantity']) { const field = task + 'Quantity'; currentModalInfo = { studentName, field }; document.getElementById('quantity-title').textContent = `${studentName} - ${field.replace('Quantity','')}`; renderQuantityModule(studentName, field, record); openModal('quantity-modal'); } } else { record[task + 'Quantity'] = ''; } } else { record.present = e.target.checked; if(!e.target.checked) { record.lessonQuantity = ''; record.homeworkQuantity = ''; record.milestoneQuantity = ''; } }
+                saveData(); renderAttendanceTable();
+            }
+        });
+        
+        document.getElementById('restore-file-input').addEventListener('change', (event) => {
+            const file = event.target.files[0]; if (!file) return;
+            if (!confirm('کیا آپ واقعی بیک اپ بحال کرنا چاہتے ہیں؟')) { event.target.value = null; return; }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try { const restoredData = JSON.parse(e.target.result); if (restoredData && restoredData.sections) { localStorage.setItem(DATA_KEY, JSON.stringify(restoredData)); loadData(); initApp(); showToast('بیک اپ کامیابی سے بحال ہو گیا ہے۔'); } else { throw new Error('Invalid file format.'); } } catch (error) { showToast('فائل خراب ہے یا درست فارمیٹ میں نہیں۔'); }
+                event.target.value = null; 
+            };
+            reader.readAsText(file);
+        });
+
+        document.body.addEventListener('click', async (e) => {
+            const target = e.target.closest('[data-action]'); if (!target) return;
+            const { action, studentName, field } = target.dataset;
+            const section = sectionSelector.value;
+            const dateStr = currentDate.toISOString().split('T')[0];
+
+            switch(action) {
+                case 'toggle-watchlist': { const wIndex = attendanceData.watchlist.indexOf(studentName); if (wIndex > -1) attendanceData.watchlist.splice(wIndex, 1); else attendanceData.watchlist.push(studentName); saveData(); renderAttendanceTable(); renderDailyStats(); break; }
+                case 'edit-quantity': { const studentIndex = attendanceData.sections[section].students.indexOf(studentName); if (studentIndex === -1) return; const record = attendanceData.sections[section].attendance[dateStr]?.[studentIndex]; if (!record || !record.present) { showToast('پہلے حاضری لگائیں۔'); return; } currentModalInfo = { studentName, field }; document.getElementById('quantity-title').textContent = `${studentName} - ${field.replace('Quantity','')}`; renderQuantityModule(studentName, field, record); openModal('quantity-modal'); break; }
+                case 'add-student': { currentModalInfo = { isNew: true }; document.getElementById('student-modal-title').textContent = 'نیا طالب علم شامل کریں'; document.getElementById('student-form-name').value = ''; document.getElementById('student-form-phone').value = ''; openModal('student-details-modal'); break; }
+                case 'edit-student': { currentModalInfo = { isNew: false, oldName: studentName }; const details = attendanceData.studentDetails[studentName] || {}; document.getElementById('student-modal-title').textContent = `ترمیم: ${studentName}`; document.getElementById('student-form-name').value = studentName; document.getElementById('student-form-phone').value = details.phone || ''; document.getElementById('student-form-milestone-start').value = details.milestoneStart || ''; document.getElementById('student-form-milestone-end').value = details.milestoneEnd || ''; document.querySelector(`input[name="milestoneOrder"][value="${details.milestoneOrder || 'straight'}"]`).checked = true; document.getElementById('student-form-homework-para').value = details.homeworkPara || ''; document.getElementById('student-form-homework-total').value = details.homeworkTotal || ''; openModal('student-details-modal'); break; }
+                case 'delete-student': { if (confirm(`کیا آپ واقعی طالب علم "${studentName}" کو حذف کرنا چاہتے ہیں؟`)) { const studentIndex = attendanceData.sections[section].students.indexOf(studentName); if(studentIndex > -1) { attendanceData.sections[section].students.splice(studentIndex, 1); Object.values(attendanceData.sections[section].attendance).forEach(day => { if(day.length > studentIndex) day.splice(studentIndex, 1); }); delete attendanceData.studentDetails[studentName]; const wIndex = attendanceData.watchlist.indexOf(studentName); if(wIndex > -1) attendanceData.watchlist.splice(wIndex, 1); saveData(); renderStudentManagement(); renderAttendanceTable(); } } break; }
+                case 'save-quantity': { const { studentName: sName, field: f } = currentModalInfo; const sIndex = attendanceData.sections[section].students.indexOf(sName); if(sIndex === -1) return; const value = document.getElementById('quantity-input-text').value.trim(); attendanceData.sections[section].attendance[dateStr][sIndex][f] = value; saveData(); renderAttendanceTable(); closeModal('quantity-modal'); break; }
+                case 'save-student-details': { const newName = document.getElementById('student-form-name').value.trim(); if(!newName) { showToast('طالب علم کا نام لازمی ہے۔'); return; } const students = attendanceData.sections[section].students; if(currentModalInfo.isNew) { if(students.includes(newName)) { showToast('اس نام کا طالب علم پہلے سے موجود ہے۔'); return; } students.push(newName); } else if (newName !== currentModalInfo.oldName) { const oldIndex = students.indexOf(currentModalInfo.oldName); if(oldIndex > -1) students[oldIndex] = newName; if(attendanceData.studentDetails[currentModalInfo.oldName]) { attendanceData.studentDetails[newName] = attendanceData.studentDetails[currentModalInfo.oldName]; delete attendanceData.studentDetails[currentModalInfo.oldName]; } const wIndex = attendanceData.watchlist.indexOf(currentModalInfo.oldName); if(wIndex > -1) attendanceData.watchlist[wIndex] = newName; } attendanceData.studentDetails[newName] = { phone: document.getElementById('student-form-phone').value.trim(), milestoneStart: parseInt(document.getElementById('student-form-milestone-start').value) || 1, milestoneEnd: parseInt(document.getElementById('student-form-milestone-end').value) || 30, milestoneOrder: document.querySelector('input[name="milestoneOrder"]:checked').value, homeworkPara: parseInt(document.getElementById('student-form-homework-para').value) || null, homeworkTotal: parseInt(document.getElementById('student-form-homework-total').value) || null }; saveData(); renderStudentManagement(); renderAttendanceTable(); closeModal('student-details-modal'); break; }
+                case 'restore': document.getElementById('restore-file-input').click(); break;
+                case 'close-modal': closeModal(target.closest('.modal').id); break;
+                case 'show-report': renderAndShowStudentReport(studentName, new Date()); break;
+                case 'prev-month': currentModalInfo.reportDate.setMonth(currentModalInfo.reportDate.getMonth() - 1); renderAndShowStudentReport(currentModalInfo.studentName, currentModalInfo.reportDate); break;
+                case 'next-month': currentModalInfo.reportDate.setMonth(currentModalInfo.reportDate.getMonth() + 1); renderAndShowStudentReport(currentModalInfo.studentName, currentModalInfo.reportDate); break;
+                 case 'message-student': {
+                    const details = attendanceData.studentDetails[studentName] || {};
+                    const phone = details.phone;
+                    if (phone) {
+                        const cleanPhone = phone.replace(/\D/g, '');
+                        window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}`, '_blank');
+                    } else {
+                        showToast('اس طالب علم کا فون نمبر محفوظ نہیں ہے۔');
+                    }
+                    break;
+                }
+                case 'backup': {
+                    try {
+                        const dataStr = JSON.stringify(attendanceData, null, 2);
+                        const blob = new Blob([dataStr], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `hifz_tracker_backup_${new Date().toISOString().split('T')[0]}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        showToast('بیک اپ کامیابی سے ڈاؤنلوڈ ہو گیا۔');
+                    } catch (e) {
+                        console.error('Error creating backup', e);
+                        showToast('بیک اپ بنانے میں خرابی۔');
+                    }
+                    break;
+                }
+                case 'share-whatsapp': {
+                    const reportTitleText = document.getElementById('student-report-title')?.textContent;
+                    const reportTable = document.getElementById('student-report-content')?.querySelector('table');
+                    if (!reportTitleText || !reportTable) { showToast('شیئر کرنے کے لیے کوئی مواد نہیں ہے۔'); return; }
+                    let message = `*${reportTitleText}*\n\n`;
+                    reportTable.querySelectorAll('tr').forEach((row, index) => {
+                        const cells = row.querySelectorAll('th, td');
+                        if (cells.length > 0) {
+                            message += Array.from(cells).map(cell => cell.textContent.trim()).join(' | ') + '\n';
+                            if (index === 0) message += '--------------------\n';
+                        }
+                    });
+                    message += `\n- Hifaz Tracker App`;
+                    try {
+                        if (navigator.share) {
+                            await navigator.share({ title: 'Hifz Tracker Report', text: message });
+                        } else {
+                            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
+                        }
+                    } catch (e) { console.error('Share error:', e); showToast('شیئرنگ ممکن نہیں ہے۔'); }
+                    break;
+                }
+                case 'share-pdf': {
+                    const reportContentEl = document.getElementById('student-report-content');
+                    const reportTitleEl = document.getElementById('student-report-title');
+                    if (!reportContentEl || !reportTitleEl) { showToast('PDF بنانے کے لیے مواد موجود نہیں ہے۔'); return; }
+                    showToast('پی ڈی ایف بن رہا ہے...');
+                    try {
+                        const canvas = await html2canvas(reportContentEl, { scale: 2, useCORS: true });
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+                        const imgWidth = pdf.internal.pageSize.getWidth() - 20;
+                        const imgHeight = canvas.height * imgWidth / canvas.width;
+                        pdf.text(reportTitleEl.textContent, pdf.internal.pageSize.getWidth() / 2, 10, { align: 'center' });
+                        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, 15, imgWidth, imgHeight);
+                        const fileName = `report_${currentModalInfo.studentName}_${Date.now()}.pdf`;
+                        pdf.save(fileName);
+                    } catch (err) {
+                        console.error('PDF creation error:', err);
+                        showToast('PDF بنانے میں خرابی۔');
+                    }
+                    break;
+                }
+            }
+        });
+    })();
+
     loadData();
     initApp();
 });
